@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../hooks/useCamera';
@@ -14,7 +14,7 @@ const BIN_STYLE = {
   negro:  { bg: '#EBEBEB', accent: '#2A2F3D', label: 'No aprovechable', binColor: '#2A2F3D' },
 };
 
-function ResultSheet({ result, onRetry, onLearnMore }) {
+function ResultSheet({ result, uploadedImage, onRetry, onLearnMore }) {
   const cat = WASTE_CATEGORIES[result.label] || WASTE_CATEGORIES['Basura Varia'];
   const bin = BINS[cat.bin];
   const bs = BIN_STYLE[cat.bin] || BIN_STYLE.negro;
@@ -31,12 +31,29 @@ function ResultSheet({ result, onRetry, onLearnMore }) {
         zIndex: 10,
         padding: '16px 20px 40px',
         boxShadow: '0 -8px 32px rgba(0,0,0,0.22)',
+        maxHeight: '82vh',
+        overflow: 'hidden auto',
       }}
     >
-      {/* Handle */}
       <div style={{ width: 44, height: 4, background: '#D4CEBC', borderRadius: 99, margin: '0 auto 16px' }} />
-
       <CaliBar height={2.5} style={{ marginBottom: 16, opacity: 0.6 }} />
+
+      {/* Si viene de imagen subida, mostrar preview */}
+      {uploadedImage && (
+        <div style={{ marginBottom: 14, borderRadius: 14, overflow: 'hidden', height: 140, position: 'relative' }}>
+          <img src={uploadedImage} alt="Residuo analizado"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{
+            position: 'absolute', top: 8, right: 8,
+            background: 'rgba(45,122,74,0.88)', backdropFilter: 'blur(8px)',
+            borderRadius: 99, padding: '3px 10px',
+          }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: '#fff', letterSpacing: 0.8 }}>
+              📁 IMAGEN SUBIDA
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Category header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -81,7 +98,7 @@ function ResultSheet({ result, onRetry, onLearnMore }) {
         </div>
       </div>
 
-      {/* Confidence */}
+      {/* Confidence bar */}
       {result.confidence < 100 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <div style={{ flex: 1, height: 3, background: '#E8E3D8', borderRadius: 99, overflow: 'hidden' }}>
@@ -93,14 +110,11 @@ function ResultSheet({ result, onRetry, onLearnMore }) {
         </div>
       )}
 
-      {/* Tips (top 2) */}
+      {/* Tips */}
       <div style={{ marginBottom: 16 }}>
         {cat.tips.slice(0, 2).map((tip, i) => (
           <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6, alignItems: 'flex-start' }}>
-            <span style={{
-              fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, fontWeight: 700,
-              color: bs.accent, flexShrink: 0, marginTop: 1,
-            }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, fontWeight: 700, color: bs.accent, flexShrink: 0, marginTop: 1 }}>
               {i + 1}.
             </span>
             <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12.5, color: '#6B7080', margin: 0, lineHeight: 1.45 }}>
@@ -118,7 +132,7 @@ function ResultSheet({ result, onRetry, onLearnMore }) {
           fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1A1F2E', fontSize: 13,
           cursor: 'pointer',
         }}>
-          Escanear otro
+          {uploadedImage ? 'Subir otra' : 'Escanear otro'}
         </button>
         <button onClick={onLearnMore} className="btn-press" style={{
           padding: '13px 0', borderRadius: 99,
@@ -192,6 +206,8 @@ export default function ScannerPage() {
   const [phase, setPhase] = useState('idle');
   const [result, setResult] = useState(null);
   const [showManual, setShowManual] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null); // data URL para preview
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     startCamera().then(() => { if (IS_CONFIGURED) loadModel(); });
@@ -200,6 +216,7 @@ export default function ScannerPage() {
 
   useEffect(() => { if (cameraState === 'active') setPhase('ready'); }, [cameraState]);
 
+  // ── Captura desde cámara ──────────────────────────────────
   const handleCapture = useCallback(async () => {
     if (phase !== 'ready') return;
     if (!IS_CONFIGURED) { setShowManual(true); return; }
@@ -207,25 +224,94 @@ export default function ScannerPage() {
     const canvas = captureFrame();
     if (!canvas) { setPhase('ready'); return; }
     const res = await predict(canvas);
-    if (res) { setResult(res); setPhase('result'); }
+    if (res) { setUploadedImage(null); setResult(res); setPhase('result'); }
     else setPhase('ready');
   }, [phase, captureFrame, predict]);
 
-  const handleRetry = () => { setResult(null); setPhase('ready'); setShowManual(false); };
+  // ── Carga desde galería / archivo ────────────────────────
+  const handleFileSelect = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';           // permite seleccionar el mismo archivo de nuevo
+    if (!file) return;
+
+    setPhase('scanning');
+
+    // Convertir a data URL para el preview
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => resolve(ev.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    // Crear elemento img y esperar que cargue
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise((resolve) => { img.onload = resolve; });
+
+    // Aseguramos que el modelo esté cargado
+    if (IS_CONFIGURED && modelState !== 'ready') {
+      await loadModel();
+      // Esperar brevemente a que el estado se propague
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    if (!IS_CONFIGURED) {
+      // Sin modelo: abrir selector manual con la imagen de preview
+      setUploadedImage(dataUrl);
+      setPhase('ready');
+      setShowManual(true);
+      return;
+    }
+
+    const res = await predict(img);
+    if (res) {
+      setUploadedImage(dataUrl);
+      setResult(res);
+      setPhase('result');
+    } else {
+      setPhase('ready');
+    }
+  }, [predict, loadModel, modelState]);
+
+  const handleRetry = () => {
+    setResult(null);
+    setUploadedImage(null);
+    setPhase(cameraState === 'active' ? 'ready' : 'idle');
+    setShowManual(false);
+  };
 
   return (
     <div style={{ height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', background: '#0E1420' }}>
+
+      {/* Input file oculto */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileSelect}
+      />
 
       {/* ── Video ── */}
       <video ref={videoRef} playsInline muted autoPlay
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover',
-          display: cameraState === 'active' ? 'block' : 'none',
+          display: cameraState === 'active' && !uploadedImage ? 'block' : 'none',
         }} />
 
+      {/* ── Preview imagen subida ── */}
+      {uploadedImage && phase !== 'result' && (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <img src={uploadedImage} alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#0E1420' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,20,32,0.35)' }} />
+        </div>
+      )}
+
       {/* ── Sin cámara ── */}
-      {cameraState !== 'active' && (
+      {cameraState !== 'active' && !uploadedImage && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex',
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -248,7 +334,15 @@ export default function ScannerPage() {
                 fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
                 boxShadow: '0 4px 12px rgba(27,58,107,0.28)',
               }}>
-                Reintentar
+                Reintentar cámara
+              </button>
+              {/* Subir imagen como alternativa principal cuando no hay cámara */}
+              <button onClick={() => fileInputRef.current?.click()} className="btn-press" style={{
+                background: '#2D7A4A', color: '#fff', fontFamily: 'Manrope, sans-serif',
+                fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(45,122,74,0.28)',
+              }}>
+                📁 Subir foto de la galería
               </button>
               <button onClick={() => setShowManual(true)} className="btn-press" style={{
                 background: 'transparent', color: '#6B7080', fontFamily: 'Manrope, sans-serif',
@@ -259,7 +353,7 @@ export default function ScannerPage() {
               </button>
             </>
           )}
-          {(cameraState === 'idle') && (
+          {cameraState === 'idle' && (
             <>
               <span style={{ fontSize: 48 }}>📷</span>
               <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, color: '#1A1F2E', margin: 0 }}>Activa la cámara para escanear</p>
@@ -268,6 +362,12 @@ export default function ScannerPage() {
                 fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
               }}>
                 Activar cámara
+              </button>
+              <button onClick={() => fileInputRef.current?.click()} className="btn-press" style={{
+                background: '#2D7A4A', color: '#fff', fontFamily: 'Manrope, sans-serif',
+                fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
+              }}>
+                📁 Subir foto
               </button>
             </>
           )}
@@ -315,19 +415,14 @@ export default function ScannerPage() {
         </div>
       </div>
 
-      {/* ── Viewfinder ── */}
-      {cameraState === 'active' && phase !== 'result' && (
+      {/* ── Viewfinder (solo con cámara activa, sin imagen subida) ── */}
+      {cameraState === 'active' && phase !== 'result' && !uploadedImage && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex',
           alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
         }}>
           <div style={{ position: 'relative', width: 280, height: 280 }}>
-            {/* Dim overlay */}
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: 20,
-              boxShadow: '0 0 0 9999px rgba(14,20,32,0.52)',
-            }} />
-            {/* Corner brackets */}
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 20, boxShadow: '0 0 0 9999px rgba(14,20,32,0.52)' }} />
             {[
               { top: 0, left: 0, borderTop: '2.5px solid #fff', borderLeft: '2.5px solid #fff', borderRadius: '10px 0 0 0' },
               { top: 0, right: 0, borderTop: '2.5px solid #fff', borderRight: '2.5px solid #fff', borderRadius: '0 10px 0 0' },
@@ -336,7 +431,6 @@ export default function ScannerPage() {
             ].map((s, i) => (
               <div key={i} style={{ position: 'absolute', width: 32, height: 32, ...s }} />
             ))}
-            {/* Scan line */}
             {phase === 'scanning' && (
               <div style={{
                 position: 'absolute', left: 0, right: 0, height: 2,
@@ -345,7 +439,6 @@ export default function ScannerPage() {
                 animation: 'caliScan 2.2s ease-in-out infinite alternate',
               }} />
             )}
-            {/* Center label */}
             <div style={{
               position: 'absolute', top: '50%', left: '50%',
               transform: 'translate(-50%, -50%)',
@@ -367,40 +460,120 @@ export default function ScannerPage() {
         </div>
       )}
 
-      {/* ── Capture button ── */}
-      {cameraState === 'active' && phase !== 'result' && !showManual && (
+      {/* ── Indicador "Analizando imagen…" cuando se subió foto ── */}
+      {phase === 'scanning' && uploadedImage && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(14,20,32,0.75)', backdropFilter: 'blur(12px)',
+          borderRadius: 16, padding: '20px 28px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+          zIndex: 5,
+        }}>
+          <div style={{ width: 36, height: 36, border: '3px solid #4ADE80', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+          <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, color: '#fff', margin: 0, letterSpacing: 0.8 }}>
+            Analizando imagen…
+          </p>
+        </div>
+      )}
+
+      {/* ── Botones inferiores: captura + subir foto ── */}
+      {(cameraState === 'active' || uploadedImage) && phase !== 'result' && !showManual && (
         <div style={{
           position: 'absolute', bottom: 90, left: 0, right: 0,
-          display: 'flex', justifyContent: 'center',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24,
         }}>
-          <button onClick={handleCapture} disabled={phase === 'scanning'}
+          {/* Botón subir foto (izquierdo) */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={phase === 'scanning'}
             className="btn-press"
             style={{
-              width: 72, height: 72, borderRadius: 36,
-              border: '3px solid rgba(255,255,255,0.5)',
-              background: phase === 'scanning' ? '#2D7A4A' : '#1B3A6B',
-              boxShadow: '0 4px 24px rgba(27,58,107,0.5)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
-            {phase === 'scanning'
-              ? <div style={{ width: 28, height: 28, border: '3px solid #fff', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
-              : <span style={{ fontSize: 24 }}>{IS_CONFIGURED ? '📸' : '✋'}</span>
-            }
+              width: 50, height: 50, borderRadius: 25,
+              background: 'rgba(45,122,74,0.85)', backdropFilter: 'blur(10px)',
+              border: '1.5px solid rgba(255,255,255,0.25)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', gap: 2,
+            }}
+            title="Subir foto de la galería"
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }}>📁</span>
           </button>
+
+          {/* Botón captura (central, solo si hay cámara activa) */}
+          {cameraState === 'active' && (
+            <button
+              onClick={handleCapture}
+              disabled={phase === 'scanning'}
+              className="btn-press"
+              style={{
+                width: 72, height: 72, borderRadius: 36,
+                border: '3px solid rgba(255,255,255,0.5)',
+                background: phase === 'scanning' ? '#2D7A4A' : '#1B3A6B',
+                boxShadow: '0 4px 24px rgba(27,58,107,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              {phase === 'scanning'
+                ? <div style={{ width: 28, height: 28, border: '3px solid #fff', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                : <span style={{ fontSize: 24 }}>{IS_CONFIGURED ? '📸' : '✋'}</span>
+              }
+            </button>
+          )}
+
+          {/* Botón manual (derecho) */}
+          <button
+            onClick={() => setShowManual(true)}
+            disabled={phase === 'scanning'}
+            className="btn-press"
+            style={{
+              width: 50, height: 50, borderRadius: 25,
+              background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(10px)',
+              border: '1.5px solid rgba(255,255,255,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: 18,
+            }}
+            title="Selección manual"
+          >
+            ✋
+          </button>
+        </div>
+      )}
+
+      {/* ── Label explicativo debajo de los botones ── */}
+      {cameraState === 'active' && phase === 'ready' && !showManual && (
+        <div style={{
+          position: 'absolute', bottom: 60, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', gap: 32,
+        }}>
+          <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8.5, color: 'rgba(255,255,255,0.38)', letterSpacing: 0.5 }}>
+            GALERÍA
+          </span>
+          <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8.5, color: 'rgba(255,255,255,0.38)', letterSpacing: 0.5 }}>
+            CAPTURAR
+          </span>
+          <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8.5, color: 'rgba(255,255,255,0.38)', letterSpacing: 0.5 }}>
+            MANUAL
+          </span>
         </div>
       )}
 
       {/* ── Sheets ── */}
       <AnimatePresence>
         {phase === 'result' && result && (
-          <ResultSheet result={result} onRetry={handleRetry}
-            onLearnMore={() => navigate('/guide', { state: { highlight: result.label } })} />
+          <ResultSheet
+            result={result}
+            uploadedImage={uploadedImage}
+            onRetry={handleRetry}
+            onLearnMore={() => navigate('/guide', { state: { highlight: result.label } })}
+          />
         )}
         {showManual && (
           <ManualPicker
             onSelect={(r) => { setResult(r); setShowManual(false); setPhase('result'); }}
-            onClose={() => setShowManual(false)} />
+            onClose={() => setShowManual(false)}
+          />
         )}
       </AnimatePresence>
     </div>
