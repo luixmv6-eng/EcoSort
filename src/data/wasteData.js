@@ -1,0 +1,266 @@
+// Datos completos sobre residuos y canecas para Cali, Colombia
+// Basado en la Resolución 2184 de 2019 (Ministerio de Ambiente)
+
+export const BINS = {
+  blanco: {
+    id: 'blanco',
+    name: 'Caneca Blanca',
+    subtitle: 'Reciclables y Aprovechables',
+    bgColor: '#ffffff',
+    borderColor: '#d1d5db',
+    textColor: '#1e293b',
+    badgeBg: '#f1f5f9',
+    icon: '♻️',
+    gradient: 'from-slate-100 to-white',
+    accepts: ['Plástico', 'Vidrio', 'Papel', 'Metal', 'Cartón', 'Multicapa (Tetra Pak)'],
+    description:
+      'Aquí van todos los materiales reciclables que pueden transformarse en nuevos productos. Es la caneca más importante para el reciclaje.',
+    tips: [
+      'Los materiales deben ir limpios y secos',
+      'Aplana cajas y botellas para ahorrar espacio',
+      'Retira residuos de comida antes de depositar',
+      'Separa plástico de papel si puedes',
+    ],
+    schedule:
+      'En Cali la recolección diferenciada de reciclables opera por rutas. Consulta el día para tu barrio en el 015 de EMCALI o en la app Cali Limpia.',
+    regulation: 'Resolución 2184 de 2019 – Ministerio de Ambiente y Desarrollo Sostenible',
+  },
+  verde: {
+    id: 'verde',
+    name: 'Caneca Verde',
+    subtitle: 'Residuos Orgánicos Aprovechables',
+    bgColor: '#16a34a',
+    borderColor: '#15803d',
+    textColor: '#ffffff',
+    badgeBg: '#15803d',
+    icon: '🌿',
+    gradient: 'from-green-600 to-green-500',
+    accepts: ['Restos de comida', 'Cáscaras de frutas y verduras', 'Posos de café', 'Restos de jardín', 'Bolsas de té'],
+    description:
+      'Para residuos orgánicos biodegradables que se convierten en compost o biogás. En Cali se procesan en plantas de aprovechamiento.',
+    tips: [
+      'Evita mezclar con plásticos o papel',
+      'Puedes hacer compostaje casero con estos residuos',
+      'No incluyas carnes o lácteos en compost casero',
+      'Las hojas y pasto también van aquí',
+    ],
+    schedule:
+      'Recolección de orgánicos en comunas piloto de Cali. El Programa "Cali Recicla" está ampliando la cobertura. Verifica en tu barrio.',
+    regulation: 'Resolución 2184 de 2019 – Ministerio de Ambiente y Desarrollo Sostenible',
+  },
+  negro: {
+    id: 'negro',
+    name: 'Caneca Negra',
+    subtitle: 'Residuos No Aprovechables',
+    bgColor: '#1e293b',
+    borderColor: '#0f172a',
+    textColor: '#ffffff',
+    badgeBg: '#0f172a',
+    icon: '🗑️',
+    gradient: 'from-slate-800 to-slate-900',
+    accepts: ['Papel higiénico', 'Servilletas con grasa', 'Pañales', 'Colillas de cigarrillo', 'Chicles', 'Empaques de snacks'],
+    description:
+      'Son residuos que no pueden aprovecharse y van al relleno sanitario Colomba – El Guabal. Hay que minimizarlos al máximo.',
+    tips: [
+      'Trata de reducir al máximo este tipo de residuos',
+      'Nunca mezcles reciclables aquí',
+      'Las pilas van en puntos especiales (NO aquí)',
+      'Los medicamentos van en farmacias habilitadas',
+    ],
+    schedule:
+      'Recolección regular 3 veces por semana en la mayoría de comunas de Cali. Consulta tu ruta en la página de PGIRS Cali.',
+    regulation: 'Decreto 1077 de 2015 – Servicio Público de Aseo',
+  },
+};
+
+export const WASTE_CATEGORIES = {
+  Plastico: {
+    id: 'plastico',
+    label: 'Plástico',
+    emoji: '🥤',
+    bin: 'blanco',
+    color: '#3b82f6',
+    lightColor: '#eff6ff',
+    examples: [
+      'Botellas de gaseosa y agua (PET)',
+      'Bolsas plásticas limpias',
+      'Envases de shampoo y jabón',
+      'Tapas de plástico',
+      'Envases de yogur y margarina',
+      'Pitillos y cubiertos plásticos',
+    ],
+    notAccepted: ['Plásticos con comida', 'Bolsas sucias', 'Plástico mezclado con tóxicos'],
+    tips: [
+      'Enjuaga bien los envases antes de reciclar',
+      'Aplasta las botellas para ahorrar espacio',
+      'Retira las etiquetas de papel si puedes',
+      'El PET (código 1) es el más fácil de reciclar',
+    ],
+    fact: 'Colombia recicla apenas el 17% de sus plásticos. ¡Tú puedes mejorar esa cifra!',
+    description:
+      'Los plásticos son polímeros sintéticos que pueden reprocesarse para crear nuevos productos. Cada botella reciclada ahorra energía equivalente a 60 vatios por 6 horas.',
+    impact: '1 kg de plástico reciclado = 1.5 kg de CO₂ que no va a la atmósfera',
+  },
+  Vidrios: {
+    id: 'vidrios',
+    label: 'Vidrio',
+    emoji: '🫙',
+    bin: 'blanco',
+    color: '#06b6d4',
+    lightColor: '#ecfeff',
+    examples: [
+      'Botellas de vidrio (licor, vino, cerveza)',
+      'Frascos de conservas y mermelada',
+      'Tarros de crema y cosméticos',
+      'Vasos y copas rotas',
+      'Botellas de salsa',
+    ],
+    notAccepted: ['Espejos', 'Vidrio de ventana (templado)', 'Bombillos (punto especial)', 'Cristalería de laboratorio'],
+    tips: [
+      'Enjuaga los frascos y botellas',
+      'El vidrio roto envuélvelo en papel periódico por seguridad',
+      'Retira las tapas metálicas (van con el metal)',
+      'El vidrio es 100% reciclable sin perder calidad',
+    ],
+    fact: 'El vidrio puede reciclarse infinitamente. ¡Una botella reciclada ahorra suficiente energía para encender un televisor 1.5 horas!',
+    description:
+      'El vidrio es uno de los materiales más sostenibles: se puede reciclar sin límite de ciclos sin perder pureza ni resistencia. En Cali hay plantas que procesan vidrio reciclado.',
+    impact: 'Reciclar 1 tonelada de vidrio ahorra 315 kg de CO₂ y 1.2 toneladas de materias primas',
+  },
+  Papel: {
+    id: 'papel',
+    label: 'Papel',
+    emoji: '📄',
+    bin: 'blanco',
+    color: '#eab308',
+    lightColor: '#fefce8',
+    examples: [
+      'Periódicos y revistas',
+      'Papel de oficina e impresoras',
+      'Cuadernos (sin espiral)',
+      'Libros viejos',
+      'Papel kraft (bolsas de tienda)',
+      'Cajas de huevos de papel',
+    ],
+    notAccepted: [
+      'Papel higiénico (caneca negra)',
+      'Papel con grasa (pizza, frituras)',
+      'Papel encerado o plastificado',
+      'Servilletas usadas',
+    ],
+    tips: [
+      'El papel debe estar seco y limpio',
+      'Retira grapas y clips metálicos',
+      'El papel mojado pierde valor de reciclaje',
+      'No arrugues el papel, es más fácil de reciclar plano',
+    ],
+    fact: 'Reciclar 1 tonelada de papel salva 17 árboles y ahorra 26,000 litros de agua.',
+    description:
+      'El papel es uno de los materiales más reciclados del mundo. Su reciclaje reduce significativamente la deforestación y el consumo de agua en la industria papelera.',
+    impact: 'Reciclar papel consume 65% menos energía que producirlo desde materia prima',
+  },
+  Metal: {
+    id: 'metal',
+    label: 'Metal',
+    emoji: '🥫',
+    bin: 'blanco',
+    color: '#6b7280',
+    lightColor: '#f9fafb',
+    examples: [
+      'Latas de aluminio (gaseosa, cerveza)',
+      'Latas de conservas (atún, tomate)',
+      'Tapas metálicas de frascos',
+      'Papel aluminio limpio',
+      'Aerosoles vacíos',
+      'Ollas y utensilios viejos',
+    ],
+    notAccepted: ['Latas con restos de pintura o tóxicos', 'Pilas y baterías (punto especial)', 'Electrodomésticos (RAEE)'],
+    tips: [
+      'Enjuaga bien las latas antes de reciclar',
+      'Aplasta las latas para ahorrar espacio',
+      'Retira las tapas de plástico de los aerosoles',
+      'El aluminio es uno de los materiales más valiosos del reciclaje',
+    ],
+    fact: 'Reciclar aluminio consume solo el 5% de la energía necesaria para producirlo desde bauxita.',
+    description:
+      'Los metales son infinitamente reciclables. El aluminio es especialmente valioso: los recicladores pagan bien por él. En Colombia, Compuerta y otras empresas lo compran.',
+    impact: 'Reciclar 1 lata de aluminio ahorra energía para encender un televisor durante 3 horas',
+  },
+  Carton: {
+    id: 'carton',
+    label: 'Cartón',
+    emoji: '📦',
+    bin: 'blanco',
+    color: '#92400e',
+    lightColor: '#fffbeb',
+    examples: [
+      'Cajas de cartón corrugado',
+      'Empaques de cereales y alimentos',
+      'Cajas de zapatos',
+      'Rollos internos de papel higiénico',
+      'Tubos de cartón',
+      'Empaques de electrodomésticos',
+    ],
+    notAccepted: ['Cajas de pizza con grasa', 'Cartón mojado o muy sucio', 'Cartón plastificado brillante'],
+    tips: [
+      'Aplana las cajas para ahorrar mucho espacio',
+      'Retira el plástico de burbujas o foam de las cajas',
+      'Si la caja tiene un poco de grasa, puedes cortar esa parte',
+      'El cartón corrugado es muy valorado por los recicladores',
+    ],
+    fact: 'Colombia es el 4° productor de papel y cartón de América Latina. ¡Reciclar ayuda a la industria local!',
+    description:
+      'El cartón es uno de los materiales con mayor demanda en el mercado del reciclaje. Las empresas papeleras lo necesitan constantemente como materia prima.',
+    impact: 'Reciclar cartón reduce en un 25% la energía necesaria respecto a producción desde fibra virgen',
+  },
+  'Basura Varia': {
+    id: 'basura_varia',
+    label: 'No Reciclable',
+    emoji: '🗑️',
+    bin: 'negro',
+    color: '#374151',
+    lightColor: '#f8fafc',
+    examples: [
+      'Papel higiénico y servilletas usadas',
+      'Pañales y toallas femeninas',
+      'Colillas de cigarrillo',
+      'Chicles y caramelos',
+      'Empaques de snacks metalizados',
+      'Residuos de barrido',
+    ],
+    notAccepted: [
+      'Pilas (llevar a Éxito, Jumbo o farmacias)',
+      'Medicamentos (llevar a farmacias habilitadas)',
+      'Aceite de cocina (llevar a Puntos Verdes)',
+      'Electrodomésticos (RAEE – puntos especiales)',
+    ],
+    tips: [
+      'Reduce al máximo los residuos en esta caneca',
+      'Cierra bien las bolsas antes de desechar',
+      'Los residuos especiales NUNCA van aquí',
+      'Considera cambiar a alternativas reutilizables',
+    ],
+    fact: 'En Cali se generan ~1,500 toneladas de residuos por día. Solo el 8% se recicla actualmente.',
+    description:
+      'Son residuos que en este momento no tienen proceso de aprovechamiento y van al Relleno Sanitario Colomba–El Guabal en Yumbo. La meta es minimizarlos.',
+    impact: 'Cada colombiano produce en promedio 0.7 kg de basura al día. ¡Separar bien reduce el 70% de lo que va al relleno!',
+  },
+};
+
+export const CALI_FACTS = [
+  { icon: '🏙️', stat: '~1,500', label: 'Toneladas de residuos/día en Cali' },
+  { icon: '♻️', stat: '8%', label: 'Tasa actual de reciclaje en Cali' },
+  { icon: '🎯', stat: '15%', label: 'Meta de reciclaje para 2027 (PGIRS)' },
+  { icon: '👥', stat: '600,000', label: 'Ciudadanos meta de la campaña "Residuos que valen ORO"' },
+  { icon: '🗺️', stat: '22', label: 'Comunas de Cali con rutas de reciclaje' },
+  { icon: '🌿', stat: '30%', label: 'De los residuos son orgánicos aprovechables' },
+];
+
+export const SPECIAL_POINTS = [
+  { emoji: '🔋', name: 'Pilas y Baterías', where: 'Éxito, Jumbo, Homecenter, farmacias Cafam' },
+  { emoji: '💊', name: 'Medicamentos', where: 'Farmacias habilitadas y puntos azules de salud' },
+  { emoji: '🛢️', name: 'Aceite de cocina usado', where: 'Puntos Verdes Lito, Fundación Puntos Verdes' },
+  { emoji: '📱', name: 'Electrónicos (RAEE)', where: 'Almacenes de cadena, fabricantes (Samsung, LG, etc.)' },
+  { emoji: '💡', name: 'Bombillos ahorradores', where: 'Ferreterías y almacenes de cadena participantes' },
+  { emoji: '🎨', name: 'Pinturas y tóxicos', where: 'Jornadas de recolección especial de la CVC' },
+];
