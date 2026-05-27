@@ -73,14 +73,36 @@ export const BINS = {
   },
 };
 
+// Eco-tips rotativos para la pantalla de inicio
+export const ECO_TIPS = [
+  { icon: '♻️', tip: 'Retira las etiquetas de papel de las botellas plásticas antes de depositarlas en la caneca blanca. Facilita el reciclaje en los centros de acopio de Cali.' },
+  { icon: '💧', tip: 'Enjuaga siempre los envases de alimentos antes de reciclarlos. Los residuos de comida contaminan todo el lote de reciclaje.' },
+  { icon: '📦', tip: 'Aplana las cajas de cartón antes de depositarlas. Así ahorras espacio en la caneca y facilitas la labor de los recicladores de oficio.' },
+  { icon: '🔋', tip: 'Las pilas y baterías NUNCA van en la caneca. Deposítalas en los puntos especiales del Éxito, Jumbo o Homecenter más cercano.' },
+  { icon: '🌿', tip: 'Las cáscaras de frutas y restos de comida van en la caneca verde o puedes hacer compost casero. El Jardín Botánico de Cali ofrece talleres gratuitos.' },
+  { icon: '🥤', tip: 'Una botella de plástico PET tarda 500 años en degradarse. Reciclarla en Cali evita que llegue al río Cauca y a los ecosistemas de los Farallones.' },
+  { icon: '📰', tip: 'El papel mojado pierde casi todo su valor de reciclaje. Guárdalo seco y limpio hasta el día de recolección diferenciada en tu barrio.' },
+  { icon: '🥫', tip: 'El aluminio es el material más valioso del reciclaje. Aplasta las latas antes de reciclarlas y apoya el ingreso de los recicladores de Cali.' },
+];
+
+// Eventos de reciclaje estáticos (referencia)
+export const RECYCLING_EVENTS = [
+  { date: '15', month: 'JUN', time: '08:00', title: 'Jornada de Recolección Especial', desc: 'Comunas 2, 3 y 4 — Pilas, electrónicos y medicamentos' },
+  { date: '22', month: 'JUN', time: '09:00', title: 'Mercado de Trueque Verde', desc: 'Parque del Perro, El Peñón — Intercambia objetos reutilizables' },
+  { date: '05', month: 'JUL', time: '07:00', title: 'Gran Jornada Cali Limpia', desc: 'Toda la ciudad — Campaña "Residuos que valen ORO"' },
+];
+
 export const WASTE_CATEGORIES = {
   Plastico: {
     id: 'plastico',
     label: 'Plástico',
+    badge: 'Reciclable',
+    badgeColor: 'green',
     emoji: '🥤',
     bin: 'blanco',
     color: '#3b82f6',
     lightColor: '#eff6ff',
+    caliInstruction: 'Límpiala antes de depositarla. Retira la etiqueta y la tapa para facilitar su procesamiento en los centros de acopio locales de Cali.',
     examples: [
       'Botellas de gaseosa y agua (PET)',
       'Bolsas plásticas limpias',
@@ -104,10 +126,13 @@ export const WASTE_CATEGORIES = {
   Vidrios: {
     id: 'vidrios',
     label: 'Vidrio',
+    badge: 'Reciclable',
+    badgeColor: 'green',
     emoji: '🫙',
     bin: 'blanco',
     color: '#06b6d4',
     lightColor: '#ecfeff',
+    caliInstruction: 'Enjuaga bien el frasco o botella. Si está roto, envuélvelo en papel periódico antes de depositarlo. Los centros de acopio del Distrito de Aguablanca y el norte de Cali lo procesan.',
     examples: [
       'Botellas de vidrio (licor, vino, cerveza)',
       'Frascos de conservas y mermelada',
@@ -130,10 +155,13 @@ export const WASTE_CATEGORIES = {
   Papel: {
     id: 'papel',
     label: 'Papel',
+    badge: 'Reciclable',
+    badgeColor: 'green',
     emoji: '📄',
     bin: 'blanco',
     color: '#eab308',
     lightColor: '#fefce8',
+    caliInstruction: 'Asegúrate de que esté seco y sin grasa. Retira grapas o clips. Las rutas de reciclaje diferenciada en Cali pasan por tu barrio según el cronograma de tu operador de aseo.',
     examples: [
       'Periódicos y revistas',
       'Papel de oficina e impresoras',
@@ -162,10 +190,13 @@ export const WASTE_CATEGORIES = {
   Metal: {
     id: 'metal',
     label: 'Metal',
+    badge: 'Reciclable',
+    badgeColor: 'green',
     emoji: '🥫',
     bin: 'blanco',
     color: '#6b7280',
     lightColor: '#f9fafb',
+    caliInstruction: 'Enjuaga la lata y aplástala para ahorrar espacio. El aluminio es el material más valorado por los recicladores de oficio de Cali. ¡Apoya su trabajo!',
     examples: [
       'Latas de aluminio (gaseosa, cerveza)',
       'Latas de conservas (atún, tomate)',
@@ -189,10 +220,13 @@ export const WASTE_CATEGORIES = {
   Carton: {
     id: 'carton',
     label: 'Cartón',
+    badge: 'Reciclable',
+    badgeColor: 'green',
     emoji: '📦',
     bin: 'blanco',
     color: '#92400e',
     lightColor: '#fffbeb',
+    caliInstruction: 'Aplana la caja y retira el plástico o foam de embalaje. Los recicladores de oficio de Cali recolectan cartón en horario diferenciado. Déjalo en un lugar visible.',
     examples: [
       'Cajas de cartón corrugado',
       'Empaques de cereales y alimentos',
@@ -213,13 +247,67 @@ export const WASTE_CATEGORIES = {
       'El cartón es uno de los materiales con mayor demanda en el mercado del reciclaje. Las empresas papeleras lo necesitan constantemente como materia prima.',
     impact: 'Reciclar cartón reduce en un 25% la energía necesaria respecto a producción desde fibra virgen',
   },
+  Organicos: {
+    id: 'organicos',
+    label: 'Orgánicos',
+    badge: 'Orgánico',
+    badgeColor: 'green',
+    emoji: '🌿',
+    bin: 'verde',
+    color: '#16a34a',
+    lightColor: '#f0fdf4',
+    caliInstruction: 'Deposítalo en la caneca verde. Si no tienes, inicia compostaje casero. El Jardín Botánico de Cali ofrece talleres gratuitos de compost todos los sábados.',
+    examples: [
+      'Cáscaras de frutas (banano, naranja, mango)',
+      'Restos de verduras y hortalizas',
+      'Sobras de comida cocida o cruda',
+      'Posos de café y filtros de papel',
+      'Bolsas de té y infusiones',
+      'Cáscaras de huevo',
+      'Hojas secas y restos de jardín',
+      'Pasto cortado y flores marchitas',
+      'Servilletas sin grasa (solo papel)',
+      'Pan viejo y cereales',
+    ],
+    notAccepted: [
+      'Carnes, huesos y pescado (en compost casero)',
+      'Lácteos como queso o leche (en compost casero)',
+      'Aceites y frituras (van a Puntos Verdes)',
+      'Plásticos ni papel plastificado',
+      'Residuos de baño (papel higiénico, pañales)',
+    ],
+    tips: [
+      'En casa puedes hacer compostaje en un balde con tapa: capas de orgánicos + tierra o aserrín',
+      'El sistema Bokashi fermenta orgánicos con microorganismos, ideal para apartamentos',
+      'Escurre bien los residuos antes de depositar para evitar olores',
+      'Tritura o corta en trozos pequeños para acelerar la descomposición',
+      'Mezcla residuos húmedos (comida) con secos (hojas) para un compost equilibrado',
+      'Verifica si tu barrio tiene ruta diferenciada de orgánicos (programa piloto en Cali)',
+    ],
+    fact: 'El 30% de los residuos en Cali son orgánicos. Si todos los compostan, reducimos 450 toneladas diarias del relleno sanitario.',
+    description:
+      'Los residuos orgánicos son materia biodegradable que puede transformarse en compost (abono natural) o biogás. En el relleno sanitario producen metano, un gas 25 veces más potente que el CO₂. ¡Aprovecharlos en casa es una de las acciones ambientales más impactantes que puedes tomar!',
+    impact: 'Compostar 1 kg de orgánicos evita 0.5 kg de metano y produce abono que reemplaza fertilizantes químicos',
+    composting: {
+      title: '¿Cómo hacer compost en casa?',
+      steps: [
+        'Consigue un balde plástico con tapa y hazle huecos en la base para drenaje',
+        'Agrega capas alternas: orgánicos húmedos + tierra o aserrín (1:1)',
+        'Mezcla cada 2-3 días para airear y acelerar la descomposición',
+        'En 2-3 meses tendrás abono listo para plantas y jardín',
+      ],
+    },
+  },
   'Basura Varia': {
     id: 'basura_varia',
     label: 'No Reciclable',
+    badge: 'No Aprovechable',
+    badgeColor: 'dark',
     emoji: '🗑️',
     bin: 'negro',
     color: '#374151',
     lightColor: '#f8fafc',
+    caliInstruction: 'Deposítalo en la caneca negra bien sellado. Este residuo va al Relleno Colomba–El Guabal en Yumbo. Trata de minimizarlo comprando productos con menos empaque.',
     examples: [
       'Papel higiénico y servilletas usadas',
       'Pañales y toallas femeninas',

@@ -1,264 +1,272 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../hooks/useCamera';
 import { useTeachableMachine } from '../hooks/useTeachableMachine';
 import { WASTE_CATEGORIES, BINS } from '../data/wasteData';
 import { IS_CONFIGURED } from '../config';
+import { WASTE_ICON_MAP } from '../components/Icons/WasteIcons';
+import { CaliBar, BinGlyph } from '../components/UI/DesignAtoms';
 
-// ── Componente de resultado ──────────────────────────────────
+const BIN_STYLE = {
+  blanco: { bg: '#EEF1F8', accent: '#1B3A6B', label: 'Reciclable',      binColor: '#1B3A6B' },
+  verde:  { bg: '#E8F5ED', accent: '#2D7A4A', label: 'Orgánico',        binColor: '#2D7A4A' },
+  negro:  { bg: '#EBEBEB', accent: '#2A2F3D', label: 'No aprovechable', binColor: '#2A2F3D' },
+};
+
 function ResultSheet({ result, onRetry, onLearnMore }) {
   const cat = WASTE_CATEGORIES[result.label] || WASTE_CATEGORIES['Basura Varia'];
   const bin = BINS[cat.bin];
-  const isRecyclable = cat.bin !== 'negro';
-
-  const binColors = {
-    blanco: 'bg-slate-100 text-slate-800 border-slate-300',
-    verde:  'bg-green-500 text-white border-green-600',
-    negro:  'bg-slate-800 text-white border-slate-900',
-  };
+  const bs = BIN_STYLE[cat.bin] || BIN_STYLE.negro;
+  const Icon = WASTE_ICON_MAP[result.label] || WASTE_ICON_MAP['Basura Varia'];
 
   return (
     <motion.div
       initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-10 px-5 pt-5 pb-10"
+      transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+      style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: '#FFFFFF',
+        borderRadius: '24px 24px 0 0',
+        zIndex: 10,
+        padding: '16px 20px 40px',
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.22)',
+      }}
     >
       {/* Handle */}
-      <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+      <div style={{ width: 44, height: 4, background: '#D4CEBC', borderRadius: 99, margin: '0 auto 16px' }} />
 
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-          style={{ backgroundColor: cat.lightColor }}>
-          {cat.emoji}
+      <CaliBar height={2.5} style={{ marginBottom: 16, opacity: 0.6 }} />
+
+      {/* Category header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: bs.bg, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon color={bs.accent} className="w-7 h-7" />
         </div>
-        <div className="flex-1">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Detectado</p>
-          <h2 className="text-2xl font-extrabold text-slate-800">{cat.label}</h2>
-          <div className="flex items-center gap-1 mt-0.5">
-            <div className="h-1.5 rounded-full bg-gray-200 flex-1 overflow-hidden">
-              <div className="h-full bg-primary-500 rounded-full transition-all duration-700"
-                style={{ width: `${result.confidence}%` }} />
-            </div>
-            <span className="text-xs text-slate-500 font-semibold">{result.confidence}%</span>
-          </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: '#8B8F9C', letterSpacing: 0.8, textTransform: 'uppercase', margin: 0 }}>
+            OBJETO DETECTADO
+          </p>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 17, margin: '2px 0 0' }}>
+            {cat.label}
+          </p>
+        </div>
+        <span style={{
+          fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 600,
+          color: bs.accent, background: bs.bg,
+          padding: '4px 10px', borderRadius: 99, flexShrink: 0,
+        }}>
+          {bs.label}
+        </span>
+      </div>
+
+      {/* Bin card */}
+      <div style={{
+        background: bs.bg, borderRadius: 14,
+        padding: '14px 16px', marginBottom: 14,
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <BinGlyph color={bs.binColor} size={32} stroke="rgba(255,255,255,0.5)" />
+        <div style={{ flex: 1 }}>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: bs.accent, fontSize: 13, margin: 0 }}>
+            {bin.name}
+          </p>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: bs.accent, opacity: 0.75, margin: '2px 0 0', lineHeight: 1.4 }}>
+            {cat.caliInstruction || cat.tips[0]}
+          </p>
         </div>
       </div>
 
-      {/* Bin */}
-      <div className={`rounded-2xl border-2 px-4 py-3 mb-4 ${binColors[cat.bin]}`}>
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">{bin.icon}</span>
-          <div>
-            <p className="font-bold text-base">{bin.name}</p>
-            <p className="text-xs opacity-80">{bin.subtitle}</p>
+      {/* Confidence */}
+      {result.confidence < 100 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <div style={{ flex: 1, height: 3, background: '#E8E3D8', borderRadius: 99, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: bs.accent, borderRadius: 99, width: `${result.confidence}%`, transition: 'width 0.7s' }} />
           </div>
-          {isRecyclable && (
-            <span className="ml-auto bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
-              ♻️ Recicla
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Tip */}
-      <div className="bg-primary-50 rounded-xl p-3 mb-4">
-        <p className="text-primary-800 text-sm leading-relaxed">
-          💡 {cat.tips[0]}
-        </p>
-      </div>
-
-      {/* Confidence bars all classes */}
-      {result.all && result.all.length > 1 && (
-        <div className="mb-4">
-          <p className="text-xs text-slate-400 font-semibold mb-2 uppercase tracking-wider">Análisis completo</p>
-          <div className="space-y-1">
-            {result.all.sort((a, b) => b.confidence - a.confidence).map((r) => (
-              <div key={r.label} className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 w-24 truncate">{r.label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-gray-100">
-                  <div className="h-full rounded-full bg-primary-400 transition-all"
-                    style={{ width: `${r.confidence}%` }} />
-                </div>
-                <span className="text-xs text-slate-400 w-8 text-right">{r.confidence}%</span>
-              </div>
-            ))}
-          </div>
+          <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: '#8B8F9C', width: 32, textAlign: 'right' }}>
+            {result.confidence}%
+          </span>
         </div>
       )}
 
+      {/* Tips (top 2) */}
+      <div style={{ marginBottom: 16 }}>
+        {cat.tips.slice(0, 2).map((tip, i) => (
+          <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6, alignItems: 'flex-start' }}>
+            <span style={{
+              fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, fontWeight: 700,
+              color: bs.accent, flexShrink: 0, marginTop: 1,
+            }}>
+              {i + 1}.
+            </span>
+            <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12.5, color: '#6B7080', margin: 0, lineHeight: 1.45 }}>
+              {tip}
+            </p>
+          </div>
+        ))}
+      </div>
+
       {/* Actions */}
-      <div className="flex gap-3">
-        <button onClick={onRetry}
-          className="btn-press flex-1 py-3 rounded-2xl border-2 border-primary-200 text-primary-700 font-bold text-sm">
-          📷 Escanear de nuevo
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <button onClick={onRetry} className="btn-press" style={{
+          padding: '13px 0', borderRadius: 99,
+          background: '#F4F0E8', border: '1px solid #D4CEBC',
+          fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1A1F2E', fontSize: 13,
+          cursor: 'pointer',
+        }}>
+          Escanear otro
         </button>
-        <button onClick={onLearnMore}
-          className="btn-press flex-[1.5] py-3 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold text-sm shadow-lg">
-          Aprender más →
+        <button onClick={onLearnMore} className="btn-press" style={{
+          padding: '13px 0', borderRadius: 99,
+          background: '#1B3A6B', border: 'none',
+          fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#fff', fontSize: 13,
+          cursor: 'pointer', boxShadow: '0 4px 12px rgba(27,58,107,0.3)',
+        }}>
+          Ver en guía
         </button>
       </div>
     </motion.div>
   );
 }
 
-// ── Pantalla sin modelo configurado ────────────────────────
-function NotConfiguredBanner({ onManual }) {
-  return (
-    <div className="absolute inset-x-4 bottom-28 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 z-10">
-      <div className="flex items-start gap-3">
-        <span className="text-2xl">⚠️</span>
-        <div>
-          <p className="font-bold text-amber-800 text-sm">Modelo de IA no configurado</p>
-          <p className="text-amber-700 text-xs mt-1 leading-relaxed">
-            Exporta tu modelo de Teachable Machine y pega la URL en{' '}
-            <code className="bg-amber-100 px-1 rounded">src/config.js</code>.
-            Por ahora puedes usar la selección manual.
-          </p>
-          <button onClick={onManual}
-            className="mt-2 bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg btn-press">
-            Selección manual →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Selección manual ────────────────────────────────────────
 function ManualPicker({ onSelect, onClose }) {
   return (
     <motion.div
       initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-20 px-5 pt-5 pb-10"
+      transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+      style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: '#FFFFFF',
+        borderRadius: '24px 24px 0 0',
+        zIndex: 20,
+        padding: '16px 20px 40px',
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.22)',
+      }}
     >
-      <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-      <h3 className="text-lg font-bold text-slate-800 mb-4">¿Qué tipo de residuo es?</h3>
-      <div className="grid grid-cols-3 gap-2">
-        {Object.entries(WASTE_CATEGORIES).map(([key, cat]) => (
-          <button key={key} onClick={() => onSelect({ label: key, confidence: 100, all: [] })}
-            className="btn-press bg-white border-2 border-gray-100 rounded-2xl p-3 flex flex-col items-center gap-1 hover:border-primary-300 hover:bg-primary-50 transition-colors">
-            <span className="text-3xl">{cat.emoji}</span>
-            <span className="text-xs font-semibold text-slate-700 text-center leading-tight">{cat.label}</span>
-          </button>
-        ))}
+      <div style={{ width: 44, height: 4, background: '#D4CEBC', borderRadius: 99, margin: '0 auto 16px' }} />
+      <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 17, margin: '0 0 16px' }}>
+        ¿Qué es este residuo?
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+        {Object.entries(WASTE_CATEGORIES).map(([key, cat]) => {
+          const Icon = WASTE_ICON_MAP[key] || WASTE_ICON_MAP['Basura Varia'];
+          return (
+            <button key={key}
+              onClick={() => onSelect({ label: key, confidence: 100, all: [] })}
+              className="btn-press"
+              style={{
+                background: '#F4F0E8', border: '1px solid #E2DDD4',
+                borderRadius: 14, padding: '14px 8px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                cursor: 'pointer',
+              }}>
+              <div style={{ width: 36, height: 36 }}><Icon color={cat.color} /></div>
+              <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 11.5, fontWeight: 600, color: '#1A1F2E', textAlign: 'center', lineHeight: 1.2 }}>
+                {cat.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      <button onClick={onClose} className="mt-4 w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-500 font-semibold text-sm btn-press">
+      <button onClick={onClose} className="btn-press" style={{
+        marginTop: 14, width: '100%', padding: '13px 0',
+        borderRadius: 99, border: '1px solid #D4CEBC',
+        background: 'transparent',
+        fontFamily: 'Manrope, sans-serif', fontWeight: 600, color: '#6B7080', fontSize: 13,
+        cursor: 'pointer',
+      }}>
         Cancelar
       </button>
     </motion.div>
   );
 }
 
-// ── Página principal ────────────────────────────────────────
 export default function ScannerPage() {
   const navigate = useNavigate();
   const { videoRef, cameraState, errorMsg, startCamera, stopCamera, captureFrame } = useCamera();
-  const { modelState, modelError, loadModel, predict } = useTeachableMachine();
-  const [phase, setPhase] = useState('idle');   // idle | ready | scanning | result | manual
+  const { modelState, loadModel, predict } = useTeachableMachine();
+  const [phase, setPhase] = useState('idle');
   const [result, setResult] = useState(null);
   const [showManual, setShowManual] = useState(false);
-  const canvasRef = useRef(null);
 
-  // Inicia cámara + modelo al montar
   useEffect(() => {
-    startCamera().then(() => {
-      if (IS_CONFIGURED) loadModel();
-    });
+    startCamera().then(() => { if (IS_CONFIGURED) loadModel(); });
     return () => stopCamera();
   }, []);
 
-  useEffect(() => {
-    if (cameraState === 'active') setPhase('ready');
-  }, [cameraState]);
+  useEffect(() => { if (cameraState === 'active') setPhase('ready'); }, [cameraState]);
 
   const handleCapture = useCallback(async () => {
     if (phase !== 'ready') return;
-
-    if (!IS_CONFIGURED) {
-      setShowManual(true);
-      return;
-    }
-
+    if (!IS_CONFIGURED) { setShowManual(true); return; }
     setPhase('scanning');
     const canvas = captureFrame();
     if (!canvas) { setPhase('ready'); return; }
-
-    // Dibuja preview en el canvas overlay
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      canvasRef.current.width = canvas.width;
-      canvasRef.current.height = canvas.height;
-      ctx.drawImage(canvas, 0, 0);
-    }
-
     const res = await predict(canvas);
-    if (res) {
-      setResult(res);
-      setPhase('result');
-    } else {
-      setPhase('ready');
-    }
+    if (res) { setResult(res); setPhase('result'); }
+    else setPhase('ready');
   }, [phase, captureFrame, predict]);
 
-  const handleRetry = () => {
-    setResult(null);
-    setPhase('ready');
-    setShowManual(false);
-  };
-
-  const handleLearnMore = () => {
-    navigate('/guide', { state: { highlight: result?.label } });
-  };
-
-  const handleManualSelect = (fakeResult) => {
-    setResult(fakeResult);
-    setShowManual(false);
-    setPhase('result');
-  };
+  const handleRetry = () => { setResult(null); setPhase('ready'); setShowManual(false); };
 
   return (
-    <div className="h-full relative bg-black flex flex-col">
-      {/* ── Cámara ── */}
-      <video
-        ref={videoRef}
-        playsInline muted autoPlay
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ display: cameraState === 'active' ? 'block' : 'none' }}
-      />
+    <div style={{ height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', background: '#0E1420' }}>
 
-      {/* ── Overlay cuando no hay cámara ── */}
+      {/* ── Video ── */}
+      <video ref={videoRef} playsInline muted autoPlay
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover',
+          display: cameraState === 'active' ? 'block' : 'none',
+        }} />
+
+      {/* ── Sin cámara ── */}
       {cameraState !== 'active' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 gap-4 px-8 text-center">
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex',
+          flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 20, padding: '0 32px', textAlign: 'center',
+          background: '#F4F0E8',
+        }}>
           {cameraState === 'requesting' && (
             <>
-              <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-white font-semibold">Iniciando cámara...</p>
+              <div style={{ width: 52, height: 52, border: '3px solid #1B3A6B', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, color: '#1A1F2E' }}>Iniciando cámara...</p>
             </>
           )}
           {cameraState === 'error' && (
             <>
-              <span className="text-5xl">📷</span>
-              <p className="text-white font-bold text-lg">Sin acceso a la cámara</p>
-              <p className="text-slate-400 text-sm">{errorMsg}</p>
-              <button onClick={startCamera}
-                className="btn-press bg-primary-500 text-white font-bold px-6 py-3 rounded-2xl">
+              <span style={{ fontSize: 48 }}>📷</span>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 18, margin: 0 }}>Sin acceso a la cámara</p>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#6B7080', margin: 0 }}>{errorMsg}</p>
+              <button onClick={startCamera} className="btn-press" style={{
+                background: '#1B3A6B', color: '#fff', fontFamily: 'Manrope, sans-serif',
+                fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(27,58,107,0.28)',
+              }}>
                 Reintentar
               </button>
-              <button onClick={() => setShowManual(true)}
-                className="btn-press bg-white/10 text-white font-semibold px-6 py-3 rounded-2xl">
+              <button onClick={() => setShowManual(true)} className="btn-press" style={{
+                background: 'transparent', color: '#6B7080', fontFamily: 'Manrope, sans-serif',
+                fontWeight: 600, fontSize: 13, padding: '12px 28px', borderRadius: 99,
+                border: '1px solid #D4CEBC', cursor: 'pointer',
+              }}>
                 Selección manual
               </button>
             </>
           )}
-          {cameraState === 'idle' && (
+          {(cameraState === 'idle') && (
             <>
-              <span className="text-5xl">📷</span>
-              <p className="text-white font-semibold">Toca para activar la cámara</p>
-              <button onClick={startCamera}
-                className="btn-press bg-primary-500 text-white font-bold px-6 py-3 rounded-2xl">
+              <span style={{ fontSize: 48 }}>📷</span>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, color: '#1A1F2E', margin: 0 }}>Activa la cámara para escanear</p>
+              <button onClick={startCamera} className="btn-press" style={{
+                background: '#1B3A6B', color: '#fff', fontFamily: 'Manrope, sans-serif',
+                fontWeight: 700, fontSize: 14, padding: '12px 28px', borderRadius: 99, border: 'none', cursor: 'pointer',
+              }}>
                 Activar cámara
               </button>
             </>
@@ -266,90 +274,133 @@ export default function ScannerPage() {
         </div>
       )}
 
-      {/* ── Visor / crosshair ── */}
-      {cameraState === 'active' && phase !== 'result' && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="relative w-56 h-56">
-            {/* Esquinas del visor */}
-            {['top-0 left-0 border-t-4 border-l-4 rounded-tl-2xl',
-              'top-0 right-0 border-t-4 border-r-4 rounded-tr-2xl',
-              'bottom-0 left-0 border-b-4 border-l-4 rounded-bl-2xl',
-              'bottom-0 right-0 border-b-4 border-r-4 rounded-br-2xl'].map((cls, i) => (
-              <div key={i} className={`absolute w-8 h-8 border-white ${cls}`} />
-            ))}
-            {/* Línea de escaneo */}
-            {phase === 'scanning' && (
-              <div className="absolute left-0 right-0 h-0.5 bg-primary-400 animate-scan-line" />
-            )}
+      {/* ── Header overlay ── */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 0' }}>
+          <button onClick={() => navigate(-1)} className="btn-press" style={{
+            width: 40, height: 40, borderRadius: 20,
+            background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(12px)',
+            border: '0.5px solid rgba(255,255,255,0.18)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: 18, cursor: 'pointer',
+          }}>
+            ‹
+          </button>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: 'rgba(255,255,255,0.55)', letterSpacing: 1.5, margin: 0 }}>
+              ESCÁNER · IA
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 2 }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: 3,
+                background: IS_CONFIGURED
+                  ? modelState === 'ready' ? '#4ADE80' : '#FBBF24'
+                  : '#F87171',
+                boxShadow: IS_CONFIGURED && modelState === 'ready' ? '0 0 6px #4ADE80' : 'none',
+              }} />
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>
+                {IS_CONFIGURED ? modelState === 'ready' ? 'IA ACTIVA' : 'CARGANDO…' : 'MANUAL'}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* ── Header ── */}
-      <div className="absolute top-0 left-0 right-0 safe-top px-4 pt-4 pb-2">
-        <div className="glass rounded-2xl px-4 py-2 flex items-center justify-between">
-          <h1 className="text-slate-800 font-bold text-sm">📷 Escáner de Residuos</h1>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-2 h-2 rounded-full ${
-              IS_CONFIGURED
-                ? modelState === 'ready' ? 'bg-green-500' : 'bg-amber-400 animate-pulse'
-                : 'bg-red-400'
-            }`} />
-            <span className="text-xs text-slate-500">
-              {IS_CONFIGURED
-                ? modelState === 'ready' ? 'IA lista' : 'Cargando IA...'
-                : 'Sin modelo IA'}
-            </span>
-          </div>
+          <button onClick={() => setShowManual(true)} className="btn-press" style={{
+            width: 40, height: 40, borderRadius: 20,
+            background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(12px)',
+            border: '0.5px solid rgba(255,255,255,0.18)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: 16, cursor: 'pointer',
+          }}>
+            ⋯
+          </button>
         </div>
       </div>
 
-      {/* ── Instrucción ── */}
-      {cameraState === 'active' && phase === 'ready' && (
-        <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none">
-          <div className="glass rounded-full px-4 py-2">
-            <p className="text-slate-700 text-xs font-semibold">
-              {IS_CONFIGURED ? 'Apunta al residuo y toca el botón' : 'Toca el botón para seleccionar manualmente'}
-            </p>
+      {/* ── Viewfinder ── */}
+      {cameraState === 'active' && phase !== 'result' && (
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex',
+          alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ position: 'relative', width: 280, height: 280 }}>
+            {/* Dim overlay */}
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: 20,
+              boxShadow: '0 0 0 9999px rgba(14,20,32,0.52)',
+            }} />
+            {/* Corner brackets */}
+            {[
+              { top: 0, left: 0, borderTop: '2.5px solid #fff', borderLeft: '2.5px solid #fff', borderRadius: '10px 0 0 0' },
+              { top: 0, right: 0, borderTop: '2.5px solid #fff', borderRight: '2.5px solid #fff', borderRadius: '0 10px 0 0' },
+              { bottom: 0, left: 0, borderBottom: '2.5px solid #fff', borderLeft: '2.5px solid #fff', borderRadius: '0 0 0 10px' },
+              { bottom: 0, right: 0, borderBottom: '2.5px solid #fff', borderRight: '2.5px solid #fff', borderRadius: '0 0 10px 0' },
+            ].map((s, i) => (
+              <div key={i} style={{ position: 'absolute', width: 32, height: 32, ...s }} />
+            ))}
+            {/* Scan line */}
+            {phase === 'scanning' && (
+              <div style={{
+                position: 'absolute', left: 0, right: 0, height: 2,
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)',
+                boxShadow: '0 0 8px rgba(255,255,255,0.6)',
+                animation: 'caliScan 2.2s ease-in-out infinite alternate',
+              }} />
+            )}
+            {/* Center label */}
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(10px)',
+              borderRadius: 99, padding: '6px 14px',
+              border: '0.5px solid rgba(255,255,255,0.22)',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: 3, flexShrink: 0,
+                background: phase === 'scanning' ? '#4ADE80' : '#fff',
+                boxShadow: phase === 'scanning' ? '0 0 6px #4ADE80' : 'none',
+              }} />
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: '#fff', letterSpacing: 0.5 }}>
+                {phase === 'scanning' ? 'Analizando…' : 'Encuadra el objeto'}
+              </span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Botón captura ── */}
+      {/* ── Capture button ── */}
       {cameraState === 'active' && phase !== 'result' && !showManual && (
-        <div className="absolute bottom-20 left-0 right-0 flex flex-col items-center gap-3 pb-2">
-          <button
-            onClick={handleCapture}
-            disabled={phase === 'scanning'}
-            className="btn-press w-18 h-18 rounded-full border-4 border-white shadow-2xl flex items-center justify-center"
-            style={{ width: '72px', height: '72px' }}
-          >
-            <div className={`w-14 h-14 rounded-full transition-all duration-200 flex items-center justify-center ${
-              phase === 'scanning'
-                ? 'bg-amber-400 animate-pulse'
-                : 'bg-primary-500 hover:bg-primary-400'
-            }`}>
-              <span className="text-2xl">{phase === 'scanning' ? '⏳' : IS_CONFIGURED ? '📸' : '✋'}</span>
-            </div>
+        <div style={{
+          position: 'absolute', bottom: 90, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center',
+        }}>
+          <button onClick={handleCapture} disabled={phase === 'scanning'}
+            className="btn-press"
+            style={{
+              width: 72, height: 72, borderRadius: 36,
+              border: '3px solid rgba(255,255,255,0.5)',
+              background: phase === 'scanning' ? '#2D7A4A' : '#1B3A6B',
+              boxShadow: '0 4px 24px rgba(27,58,107,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}>
+            {phase === 'scanning'
+              ? <div style={{ width: 28, height: 28, border: '3px solid #fff', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+              : <span style={{ fontSize: 24 }}>{IS_CONFIGURED ? '📸' : '✋'}</span>
+            }
           </button>
-          {phase === 'scanning' && (
-            <p className="text-white text-xs font-semibold animate-pulse">Analizando...</p>
-          )}
         </div>
-      )}
-
-      {/* ── Banner sin modelo ── */}
-      {IS_CONFIGURED === false && cameraState === 'active' && phase === 'ready' && !showManual && (
-        <NotConfiguredBanner onManual={() => setShowManual(true)} />
       )}
 
       {/* ── Sheets ── */}
       <AnimatePresence>
         {phase === 'result' && result && (
-          <ResultSheet result={result} onRetry={handleRetry} onLearnMore={handleLearnMore} />
+          <ResultSheet result={result} onRetry={handleRetry}
+            onLearnMore={() => navigate('/guide', { state: { highlight: result.label } })} />
         )}
         {showManual && (
-          <ManualPicker onSelect={handleManualSelect} onClose={() => setShowManual(false)} />
+          <ManualPicker
+            onSelect={(r) => { setResult(r); setShowManual(false); setPhase('result'); }}
+            onClose={() => setShowManual(false)} />
         )}
       </AnimatePresence>
     </div>

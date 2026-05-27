@@ -2,165 +2,278 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { WASTE_CATEGORIES, BINS } from '../data/wasteData';
+import { WASTE_ICON_MAP } from '../components/Icons/WasteIcons';
+import { CaliBar, SectionTitle, LandmarkPlaceholder } from '../components/UI/DesignAtoms';
 
-const BIN_BADGE = {
-  blanco: 'bg-slate-100 text-slate-700 border border-slate-200',
-  verde:  'bg-green-100 text-green-700 border border-green-200',
-  negro:  'bg-slate-700 text-white',
+const FILTERS = [
+  { key: 'all',    label: 'Todos',       emoji: '📋' },
+  { key: 'blanco', label: 'Reciclables', emoji: '♻️' },
+  { key: 'verde',  label: 'Orgánicos',   emoji: '🌿' },
+  { key: 'negro',  label: 'No aprove.',  emoji: '🗑️' },
+];
+
+const BIN_CHIP = {
+  blanco: { bg: '#EEF1F8', text: '#1B3A6B', border: '#C6D0E8' },
+  verde:  { bg: '#E8F5ED', text: '#2D7A4A', border: '#B3D9BF' },
+  negro:  { bg: '#EBEBEB', text: '#2A2F3D', border: '#C5C5C5' },
 };
 
 function WasteCard({ catKey, cat, isOpen, onToggle }) {
   const bin = BINS[cat.bin];
+  const Icon = WASTE_ICON_MAP[catKey] || WASTE_ICON_MAP['Basura Varia'];
+  const bc = BIN_CHIP[cat.bin] || BIN_CHIP.negro;
+
   return (
-    <motion.div
-      layout
-      className="bg-white rounded-2xl card-shadow overflow-hidden"
-    >
-      {/* Header */}
-      <button onClick={onToggle} className="btn-press w-full text-left px-4 py-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-          style={{ backgroundColor: cat.lightColor }}>
-          {cat.emoji}
+    <div style={{
+      background: '#FFFFFF', borderRadius: 16,
+      border: '1px solid #E2DDD4',
+      overflow: 'hidden',
+      boxShadow: '0 1px 4px rgba(27,58,107,0.07)',
+      marginBottom: 10,
+    }}>
+      <button onClick={onToggle} className="btn-press"
+        style={{ width: '100%', textAlign: 'left', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+          background: cat.lightColor || '#F4F0E8',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon color={cat.color} className="w-7 h-7" />
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-slate-800 text-base">{cat.label}</h3>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${BIN_BADGE[cat.bin]}`}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 15, margin: 0 }}>
+            {cat.label}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4 }}>
+            <span style={{
+              fontFamily: 'Manrope, sans-serif', fontSize: 11, fontWeight: 600,
+              padding: '3px 9px', borderRadius: 99,
+              background: bc.bg, color: bc.text, border: `1px solid ${bc.border}`,
+            }}>
               {bin.icon} {bin.name}
             </span>
+            {cat.badge && (
+              <span style={{
+                fontFamily: 'Manrope, sans-serif', fontSize: 10.5, fontWeight: 600,
+                padding: '3px 9px', borderRadius: 99,
+                background: cat.badgeColor === 'green' ? '#E8F5ED' : '#EBEBEB',
+                color: cat.badgeColor === 'green' ? '#2D7A4A' : '#2A2F3D',
+              }}>
+                {cat.badge}
+              </span>
+            )}
           </div>
         </div>
-        <motion.span animate={{ rotate: isOpen ? 180 : 0 }} className="text-gray-400 text-lg flex-shrink-0">
+        <motion.span animate={{ rotate: isOpen ? 180 : 0 }}
+          style={{ color: '#8B8F9C', fontSize: 18, flexShrink: 0 }}>
           ⌄
         </motion.span>
       </button>
 
-      {/* Expandable content */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
+            transition={{ duration: 0.28 }}
+            style={{ overflow: 'hidden' }}
           >
-            <div className="px-4 pb-4 space-y-4 border-t border-gray-100 pt-3">
-              {/* Description */}
-              <p className="text-slate-600 text-sm leading-relaxed">{cat.description}</p>
+            <div style={{ padding: '4px 16px 18px', borderTop: '1px solid #F0EDE6' }}>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#6B7080', lineHeight: 1.55, margin: '12px 0 14px' }}>
+                {cat.description}
+              </p>
 
-              {/* Examples */}
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">✅ Qué va aquí</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {cat.examples.map((ex) => (
-                    <span key={ex} className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded-lg">
-                      {ex}
-                    </span>
-                  ))}
-                </div>
+              {/* Qué va */}
+              <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#6B7080', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>
+                ✅ Qué va aquí
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                {cat.examples.map(ex => (
+                  <span key={ex} style={{
+                    fontFamily: 'Manrope, sans-serif', fontSize: 11.5,
+                    padding: '5px 10px', borderRadius: 99,
+                    background: '#F4F0E8', border: '1px solid #E2DDD4', color: '#1A1F2E',
+                  }}>
+                    {ex}
+                  </span>
+                ))}
               </div>
 
-              {/* Not accepted */}
+              {/* Qué NO va */}
               {cat.notAccepted && (
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">❌ Qué NO va aquí</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {cat.notAccepted.map((ex) => (
-                      <span key={ex} className="text-xs bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-lg">
+                <>
+                  <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#6B7080', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>
+                    ❌ Qué NO va aquí
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                    {cat.notAccepted.map(ex => (
+                      <span key={ex} style={{
+                        fontFamily: 'Manrope, sans-serif', fontSize: 11.5,
+                        padding: '5px 10px', borderRadius: 99,
+                        background: '#FFF0EF', border: '1px solid #FFDAD6', color: '#C8392E',
+                      }}>
                         {ex}
                       </span>
                     ))}
                   </div>
+                </>
+              )}
+
+              {/* Consejos */}
+              <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#6B7080', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>
+                ✦ Consejos
+              </p>
+              <ul style={{ listStyle: 'none', margin: '0 0 14px', padding: 0 }}>
+                {cat.tips.map((tip, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
+                    <span style={{ color: '#2D7A4A', fontWeight: 700, flexShrink: 0, marginTop: 1 }}>•</span>
+                    <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12.5, color: '#6B7080', lineHeight: 1.45 }}>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Compostaje */}
+              {cat.composting && (
+                <div style={{
+                  background: '#F4F0E8', borderRadius: 12, padding: '12px 14px',
+                  border: '1px solid #B3D9BF', marginBottom: 12,
+                }}>
+                  <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#2D7A4A', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                    🪴 {cat.composting.title}
+                  </p>
+                  <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {cat.composting.steps.map((step, i) => (
+                      <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 5, alignItems: 'flex-start' }}>
+                        <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700, color: '#2D7A4A', fontSize: 10, flexShrink: 0 }}>{i + 1}.</span>
+                        <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080' }}>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
                 </div>
               )}
 
-              {/* Tips */}
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">💡 Consejos</p>
-                <ul className="space-y-1">
-                  {cat.tips.map((tip) => (
-                    <li key={tip} className="flex items-start gap-2 text-sm text-slate-600">
-                      <span className="text-primary-500 mt-0.5">•</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Impact */}
-              <div className="bg-primary-50 rounded-xl p-3">
-                <p className="text-primary-700 text-xs leading-relaxed">
-                  🌍 <strong>Impacto:</strong> {cat.impact}
+              {/* Impacto */}
+              <div style={{ background: '#F4F0E8', borderRadius: 12, padding: '10px 14px', marginBottom: 8 }}>
+                <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080', margin: 0, lineHeight: 1.5 }}>
+                  🌍 <strong style={{ color: '#1A1F2E' }}>Impacto:</strong> {cat.impact}
                 </p>
               </div>
 
-              {/* Fun fact */}
-              <div className="bg-amber-50 rounded-xl p-3">
-                <p className="text-amber-700 text-xs leading-relaxed">
-                  🌟 <strong>¿Sabías que?</strong> {cat.fact}
+              {/* Dato curioso */}
+              <div style={{ background: '#EEF1F8', borderRadius: 12, padding: '10px 14px', border: '1px solid #C6D0E8' }}>
+                <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080', margin: 0, lineHeight: 1.5 }}>
+                  🌿 <strong style={{ color: '#1B3A6B' }}>¿Lo sabías?</strong> {cat.fact}
                 </p>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
 export default function GuidePage() {
   const location = useLocation();
-  const highlighted = location.state?.highlight;
-  const [openKey, setOpenKey] = useState(highlighted || null);
+  const [openKey, setOpenKey] = useState(location.state?.highlight || null);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
-  const filtered = Object.entries(WASTE_CATEGORIES).filter(([, cat]) => {
-    if (filter === 'all') return true;
-    return cat.bin === filter;
+  const filtered = Object.entries(WASTE_CATEGORIES).filter(([key, cat]) => {
+    const matchBin = filter === 'all' || cat.bin === filter;
+    const matchSearch = !search || cat.label.toLowerCase().includes(search.toLowerCase()) ||
+      cat.examples?.some(e => e.toLowerCase().includes(search.toLowerCase()));
+    return matchBin && matchSearch;
   });
 
   return (
-    <div className="h-full flex flex-col bg-primary-50">
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#F4F0E8' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-5 pt-12 pb-4 safe-top">
-        <h1 className="text-white font-extrabold text-2xl">Guía de Residuos</h1>
-        <p className="text-primary-100 text-sm mt-0.5">Aprende qué va en cada caneca</p>
+      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E2DDD4', padding: '48px 20px 16px' }}>
+        <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: '#8B8F9C', letterSpacing: 1.2, textTransform: 'uppercase', margin: '0 0 4px' }}>
+          Separación de residuos
+        </p>
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1B3A6B', fontSize: 24, margin: '0 0 4px' }}>
+          Guía de Residuos
+        </h1>
+        <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#6B7080', margin: '0 0 12px' }}>
+          ¿Dónde va cada cosa en Cali?
+        </p>
+
+        {/* Search */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: '#F4F0E8', borderRadius: 12,
+          border: '1px solid #E2DDD4', padding: '9px 14px', marginBottom: 12,
+        }}>
+          <span style={{ fontSize: 14, color: '#8B8F9C' }}>🔍</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar residuo…"
+            style={{
+              flex: 1, background: 'none', border: 'none', outline: 'none',
+              fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#1A1F2E',
+            }}
+          />
+          {search && (
+            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8B8F9C', fontSize: 14 }}>✕</button>
+          )}
+        </div>
 
         {/* Filter chips */}
-        <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
-          {[
-            { key: 'all', label: 'Todos', emoji: '📋' },
-            { key: 'blanco', label: 'Reciclables', emoji: '♻️' },
-            { key: 'verde', label: 'Orgánicos', emoji: '🌿' },
-            { key: 'negro', label: 'No aprovechables', emoji: '🗑️' },
-          ].map(({ key, label, emoji }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`btn-press flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                filter === key
-                  ? 'bg-white text-primary-700 border-white shadow'
-                  : 'bg-primary-700/30 text-primary-100 border-primary-400/30'
-              }`}
-            >
+        <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2 }} className="no-scrollbar">
+          {FILTERS.map(({ key, label, emoji }) => (
+            <button key={key} onClick={() => setFilter(key)}
+              className="btn-press"
+              style={{
+                flexShrink: 0, padding: '6px 14px', borderRadius: 99,
+                fontFamily: 'Manrope, sans-serif', fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.15s',
+                background: filter === key ? '#1B3A6B' : '#F4F0E8',
+                color: filter === key ? '#fff' : '#6B7080',
+                border: filter === key ? '1px solid #1B3A6B' : '1px solid #D4CEBC',
+              }}>
               {emoji} {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* List */}
-      <div className="flex-1 scrollable no-scrollbar px-4 pt-4 pb-28 space-y-3">
+      <div style={{ flex: 1, overflow: 'hidden auto', padding: '16px 16px 120px' }} className="no-scrollbar">
+
+        {/* Featured hero */}
+        <div style={{ marginBottom: 20 }}>
+          <SectionTitle right="DESTACADO">Lectura recomendada</SectionTitle>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2DDD4', overflow: 'hidden', boxShadow: '0 1px 4px rgba(27,58,107,0.07)' }}>
+            <LandmarkPlaceholder name="Gato del Río · Cali" code="CLO-002" tone="green" height={110} />
+            <div style={{ padding: '14px 16px' }}>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: '#2D7A4A', background: '#E8F5ED', padding: '3px 8px', borderRadius: 99, letterSpacing: 0.8 }}>
+                PGIRS 2024
+              </span>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 15, margin: '8px 0 4px', lineHeight: 1.3 }}>
+                Nuevas normas de recolección en Cali
+              </p>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12.5, color: '#6B7080', margin: 0, lineHeight: 1.5 }}>
+                El PGIRS 2024 amplía los puntos de recolección diferenciada a más comunas.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Category list */}
+        <SectionTitle right={`${filtered.length} CATEGORÍAS`}>Categorías</SectionTitle>
         {filtered.map(([key, cat]) => (
-          <WasteCard
-            key={key}
-            catKey={key}
-            cat={cat}
+          <WasteCard key={key} catKey={key} cat={cat}
             isOpen={openKey === key}
-            onToggle={() => setOpenKey(openKey === key ? null : key)}
-          />
+            onToggle={() => setOpenKey(openKey === key ? null : key)} />
         ))}
+        {filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#8B8F9C', fontFamily: 'Manrope, sans-serif', fontSize: 14 }}>
+            Sin resultados para "{search}"
+          </div>
+        )}
       </div>
     </div>
   );

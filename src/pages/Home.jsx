@@ -1,118 +1,234 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { BINS, CALI_FACTS } from '../data/wasteData';
+import { CALI_FACTS, ECO_TIPS, RECYCLING_EVENTS } from '../data/wasteData';
+import { LandmarkPlaceholder, CaliBar, BinGlyph, SectionTitle } from '../components/UI/DesignAtoms';
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const todayTip = ECO_TIPS[new Date().getDay() % ECO_TIPS.length];
 
-function BinChip({ bin }) {
-  const colors = {
-    blanco: 'bg-slate-100 text-slate-700 border border-slate-200',
-    verde:  'bg-green-100 text-green-700 border border-green-200',
-    negro:  'bg-slate-800 text-white border border-slate-700',
-  };
-  return (
-    <div className={`rounded-xl px-3 py-2 flex items-center gap-2 ${colors[bin.id]}`}>
-      <span className="text-lg">{bin.icon}</span>
-      <div>
-        <p className="font-bold text-xs">{bin.name}</p>
-        <p className="text-[10px] opacity-70">{bin.accepts.slice(0, 2).join(', ')}</p>
-      </div>
-    </div>
-  );
+const DAYS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Buenos días';
+  if (h < 18) return 'Buenas tardes';
+  return 'Buenas noches';
 }
+
+function getDateLabel() {
+  const d = new Date();
+  return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`.toUpperCase();
+}
+
+const S = {
+  page:    { height: '100%', overflow: 'hidden auto', background: '#F4F0E8', WebkitOverflowScrolling: 'touch' },
+  header:  { padding: '56px 20px 20px', borderBottom: '1px solid #E2DDD4' },
+  section: { padding: '0 16px', marginBottom: 20 },
+  card:    { background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2DDD4', overflow: 'hidden', boxShadow: '0 1px 4px rgba(27,58,107,0.07)' },
+};
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full scrollable no-scrollbar pb-24">
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-400 px-5 pt-12 pb-8 relative overflow-hidden">
-        {/* decorative circles */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
-        <div className="absolute top-16 -right-4 w-20 h-20 rounded-full bg-white/10" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/10" />
+    <div style={S.page} className="no-scrollbar">
 
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl">♻️</span>
-            <span className="text-white/80 text-sm font-semibold tracking-widest uppercase">EcoSort</span>
+      {/* ── Header ── */}
+      <div style={S.header}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
+          <div>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: '#8B8F9C', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+              {getDateLabel()}
+            </p>
+            <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: 26, fontWeight: 800, color: '#1A1F2E', margin: 0, lineHeight: 1.2 }}>
+              {getGreeting()},<br />
+              <span style={{ color: '#1B3A6B' }}>Caleño. 👋</span>
+            </h1>
           </div>
-          <h1 className="text-3xl font-extrabold text-white leading-tight mb-1">
-            Separa bien,<br />vive mejor.
-          </h1>
-          <p className="text-primary-100 text-sm mb-6">
-            Guía de separación de residuos para Cali, Valle del Cauca 🌿
-          </p>
+          <div style={{
+            width: 44, height: 44, borderRadius: 22,
+            background: '#1B3A6B',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(27,58,107,0.2)',
+          }}>
+            🌿
+          </div>
+        </div>
 
-          <button
-            onClick={() => navigate('/scanner')}
-            className="btn-press flex items-center gap-3 bg-white text-primary-700 font-bold px-6 py-3.5 rounded-2xl shadow-xl text-base"
-          >
-            <span className="text-2xl">📷</span>
-            Escanear un residuo
-          </button>
-        </motion.div>
+        <CaliBar height={3} style={{ marginBottom: 18, opacity: 0.6 }} />
+
+        {/* Stat strip */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          {CALI_FACTS.slice(0, 3).map(f => (
+            <div key={f.label} style={{
+              flex: 1, background: '#fff', borderRadius: 12,
+              border: '1px solid #E2DDD4', padding: '10px 10px 8px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 17, fontWeight: 600, color: '#1B3A6B', margin: 0, lineHeight: 1 }}>
+                {f.stat}
+              </p>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 9.5, color: '#8B8F9C', marginTop: 3, lineHeight: 1.2 }}>
+                {f.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="px-4 pt-5 space-y-5">
-        {/* Stats Cali */}
-        <motion.div variants={container} initial="hidden" animate="show">
-          <motion.h2 variants={item} className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3">
-            Cali en cifras
-          </motion.h2>
-          <div className="grid grid-cols-2 gap-2">
-            {CALI_FACTS.slice(0, 4).map((f) => (
-              <motion.div key={f.label} variants={item}
-                className="bg-white rounded-2xl p-3 card-shadow flex items-start gap-2">
-                <span className="text-2xl mt-0.5">{f.icon}</span>
-                <div>
-                  <p className="text-primary-600 font-extrabold text-lg leading-none">{f.stat}</p>
-                  <p className="text-slate-500 text-xs leading-tight mt-0.5">{f.label}</p>
+      <div style={{ padding: '20px 16px 120px' }}>
+
+        {/* ── Landmark hero ── */}
+        <div style={{ ...S.card, marginBottom: 16 }}>
+          <LandmarkPlaceholder name="Cristo Rey · Cali" code="CLO-001" tone="blue" height={140} />
+          <div style={{ padding: '14px 16px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{
+                fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 600,
+                color: '#2D7A4A', letterSpacing: 1, textTransform: 'uppercase',
+                background: '#E8F5ED', padding: '3px 8px', borderRadius: 99,
+              }}>
+                TIP DEL DÍA
+              </span>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: '#8B8F9C' }}>
+                {todayTip?.icon}
+              </span>
+            </div>
+            <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 14, color: '#1A1F2E', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
+              "{todayTip?.tip}"
+            </p>
+          </div>
+        </div>
+
+        {/* ── Action tiles ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+          <button className="btn-press" onClick={() => navigate('/scanner')} style={{
+            background: '#1B3A6B', borderRadius: 16, padding: '20px 16px',
+            border: 'none', cursor: 'pointer', textAlign: 'left',
+            boxShadow: '0 4px 14px rgba(27,58,107,0.28)',
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>📷</div>
+            <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#fff', fontSize: 15, margin: 0 }}>
+              Escanear
+            </p>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: 'rgba(255,255,255,0.55)', marginTop: 3 }}>
+              IA · TIEMPO REAL
+            </p>
+          </button>
+          <button className="btn-press" onClick={() => navigate('/bins')} style={{
+            background: '#2D7A4A', borderRadius: 16, padding: '20px 16px',
+            border: 'none', cursor: 'pointer', textAlign: 'left',
+            boxShadow: '0 4px 14px rgba(45,122,74,0.25)',
+          }}>
+            <BinGlyph color="#fff" size={28} stroke="rgba(255,255,255,0.4)" />
+            <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#fff', fontSize: 15, margin: '10px 0 0' }}>
+              Canecas
+            </p>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: 'rgba(255,255,255,0.55)', marginTop: 3 }}>
+              3 COLORES
+            </p>
+          </button>
+        </div>
+
+        {/* ── Zonas / Cifras ── */}
+        <div style={{ marginBottom: 20 }}>
+          <SectionTitle right="VER TODO →">Cali en cifras</SectionTitle>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }} className="no-scrollbar">
+            {CALI_FACTS.map(f => (
+              <div key={f.label} style={{
+                background: '#fff', borderRadius: 14, border: '1px solid #E2DDD4',
+                padding: '14px 14px 12px', minWidth: 110, flexShrink: 0,
+                boxShadow: '0 1px 3px rgba(27,58,107,0.06)',
+              }}>
+                <span style={{ fontSize: 22 }}>{f.icon}</span>
+                <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, color: '#1B3A6B', fontSize: 20, margin: '6px 0 2px', lineHeight: 1 }}>
+                  {f.stat}
+                </p>
+                <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 10, color: '#8B8F9C', lineHeight: 1.3 }}>
+                  {f.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Próximos eventos ── */}
+        {RECYCLING_EVENTS?.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <SectionTitle right={`${RECYCLING_EVENTS.length} EVENTOS`}>Próximos eventos</SectionTitle>
+            <div style={S.card}>
+              <div style={{ height: 2, background: '#2D7A4A' }} />
+              {RECYCLING_EVENTS.map((ev, i) => (
+                <div key={ev.title} style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 16px',
+                  borderBottom: i < RECYCLING_EVENTS.length - 1 ? '1px solid #F0EDE6' : 'none',
+                }}>
+                  <div style={{
+                    background: '#EEF1F8', borderRadius: 10,
+                    padding: '8px 10px', textAlign: 'center', flexShrink: 0, minWidth: 44,
+                  }}>
+                    <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700, color: '#1B3A6B', fontSize: 18, margin: 0, lineHeight: 1 }}>
+                      {ev.date}
+                    </p>
+                    <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8.5, color: '#8B8F9C', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      {ev.month}
+                    </p>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1A1F2E', fontSize: 13, margin: 0 }}>
+                      {ev.title}
+                    </p>
+                    <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 11.5, color: '#8B8F9C', marginTop: 2 }}>
+                      {ev.desc}
+                    </p>
+                  </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Canecas rápidas */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <h2 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3">Código de Canecas (Res. 2184/2019)</h2>
-          <div className="flex flex-col gap-2">
-            {Object.values(BINS).map((bin) => (
-              <button key={bin.id} onClick={() => navigate('/bins')} className="btn-press text-left">
-                <BinChip bin={bin} />
-              </button>
-            ))}
-          </div>
-          <p className="text-slate-400 text-xs mt-2 text-center">Toca una caneca para ver qué acepta →</p>
-        </motion.div>
-
-        {/* CTA recicladores */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">🌟</span>
-            <div>
-              <p className="font-bold text-amber-800 text-sm">¿Sabías que en Cali hay recicladores de oficio?</p>
-              <p className="text-amber-700 text-xs mt-1 leading-relaxed">
-                Más de 3,000 familias dependen del reciclaje. Separar bien en tu casa les facilita el trabajo y les genera ingresos dignos.
-              </p>
-              <button onClick={() => navigate('/info')}
-                className="mt-2 text-amber-700 font-bold text-xs underline">Conoce más →</button>
+              ))}
             </div>
           </div>
-        </motion.div>
+        )}
 
-        {/* Tour botón */}
-        <motion.button
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+        {/* ── Recicladores ── */}
+        <div style={{ ...S.card, padding: '16px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12,
+              background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 20, flexShrink: 0,
+            }}>🤝</div>
+            <div>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1A1F2E', fontSize: 13, margin: 0 }}>
+                Los recicladores de oficio
+              </p>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080', marginTop: 4, lineHeight: 1.5 }}>
+                Más de <strong style={{ color: '#2D7A4A' }}>3,000 familias caleñas</strong> viven del reciclaje. Separar bien facilita su trabajo.
+              </p>
+              <button onClick={() => navigate('/info')}
+                className="btn-press"
+                style={{
+                  marginTop: 8, background: 'none', border: 'none', padding: 0,
+                  fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1B3A6B', fontSize: 12, cursor: 'pointer',
+                }}>
+                Saber más →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Tour ── */}
+        <button
+          className="btn-press"
           onClick={() => { localStorage.removeItem('ecosort_tour_seen'); window.location.reload(); }}
-          className="btn-press w-full bg-white border-2 border-primary-200 text-primary-700 font-semibold py-3 rounded-2xl text-sm card-shadow"
-        >
+          style={{
+            width: '100%', padding: '13px 0',
+            borderRadius: 99, border: '1px solid #D4CEBC',
+            background: 'transparent',
+            fontFamily: 'Manrope, sans-serif', fontWeight: 600, color: '#6B7080', fontSize: 13,
+            cursor: 'pointer',
+          }}>
           🗺️ Ver tour de la app
-        </motion.button>
+        </button>
       </div>
     </div>
   );

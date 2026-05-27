@@ -4,7 +4,11 @@
       "WebSearch",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(node scripts/generate-icons.mjs)"
+      "Bash(node scripts/generate-icons.mjs)",
+      "Bash(npm list *)",
+      "PowerShell(Get-Item *)",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(node -e ' *)"
     ]
   }
 }

@@ -1,50 +1,144 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BINS, WASTE_CATEGORIES } from '../data/wasteData';
+import { BINS, WASTE_CATEGORIES, SPECIAL_POINTS } from '../data/wasteData';
+import { CaliBar, BinGlyph, LandmarkPlaceholder, SectionTitle } from '../components/UI/DesignAtoms';
 
-function BinCard({ bin }) {
-  const [open, setOpen] = useState(false);
+const BIN_CONFIG = {
+  blanco: {
+    tab:        'Blanca',
+    emoji:      '⬜',
+    accent:     '#1B3A6B',
+    bg:         '#F4F0E8',
+    headerBg:   '#EEF1F8',
+    chipBg:     '#EEF1F8',
+    chipText:   '#1B3A6B',
+    badge:      'RECICLABLES',
+    tone:       'blue',
+  },
+  verde: {
+    tab:        'Verde',
+    emoji:      '🟢',
+    accent:     '#2D7A4A',
+    bg:         '#F0F7F2',
+    headerBg:   '#E8F5ED',
+    chipBg:     '#E8F5ED',
+    chipText:   '#2D7A4A',
+    badge:      'ORGÁNICOS',
+    tone:       'green',
+  },
+  negro: {
+    tab:        'Negra',
+    emoji:      '⬛',
+    accent:     '#2A2F3D',
+    bg:         '#F2F2F2',
+    headerBg:   '#E8E8E8',
+    chipBg:     '#E8E8E8',
+    chipText:   '#2A2F3D',
+    badge:      'NO APROVE.',
+    tone:       'dusk',
+  },
+};
 
-  // Categorías que van en esta caneca
-  const categories = Object.values(WASTE_CATEGORIES).filter((c) => c.bin === bin.id);
+const BIN_KEYS = ['blanco', 'verde', 'negro'];
 
-  const headerStyle = {
-    blanco: { bg: 'bg-white',      text: 'text-slate-800',  border: 'border-gray-200',  btn: 'text-slate-700' },
-    verde:  { bg: 'bg-green-600',   text: 'text-white',      border: 'border-green-700', btn: 'text-white' },
-    negro:  { bg: 'bg-slate-800',   text: 'text-white',      border: 'border-slate-700', btn: 'text-white' },
-  }[bin.id];
+export default function BinsPage() {
+  const [active, setActive] = useState('blanco');
+  const cfg = BIN_CONFIG[active];
+  const bin = BINS[active];
+  const cats = Object.values(WASTE_CATEGORIES).filter(c => c.bin === active);
 
   return (
-    <motion.div layout className="rounded-3xl overflow-hidden card-shadow border-2"
-      style={{ borderColor: bin.borderColor }}>
-      {/* Visual bin header */}
-      <div className={`${headerStyle.bg} px-5 py-5`}>
-        <div className="flex items-center gap-4">
-          {/* Bin illustration */}
-          <div className="relative flex-shrink-0">
-            <div
-              className="w-14 h-16 rounded-b-xl rounded-t-lg border-4 flex flex-col items-center justify-end pb-1"
-              style={{ borderColor: bin.borderColor, backgroundColor: bin.bgColor }}
-            >
-              <span className="text-xl">{bin.icon}</span>
-            </div>
-            {/* lid */}
-            <div className="absolute -top-2 left-0 right-0 h-3 rounded-t-lg"
-              style={{ backgroundColor: bin.bgColor, border: `3px solid ${bin.borderColor}` }} />
-          </div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: cfg.bg, transition: 'background 0.35s' }}>
 
-          <div className="flex-1">
-            <h2 className={`text-xl font-extrabold ${headerStyle.text}`}>{bin.name}</h2>
-            <p className={`text-sm ${headerStyle.text} opacity-70`}>{bin.subtitle}</p>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {categories.map((c) => (
-                <span key={c.id} className={`text-xs font-semibold px-2 py-0.5 rounded-lg border ${
-                  bin.id === 'blanco'
-                    ? 'bg-primary-50 text-primary-700 border-primary-200'
-                    : bin.id === 'verde'
-                    ? 'bg-green-700 text-white border-green-800'
-                    : 'bg-slate-700 text-white border-slate-600'
-                }`}>
+      {/* Header */}
+      <div style={{ background: cfg.headerBg, borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '48px 20px 16px', transition: 'background 0.35s' }}>
+        <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: '#8B8F9C', letterSpacing: 1.2, textTransform: 'uppercase', margin: '0 0 4px' }}>
+          Cultura Ciudadana
+        </p>
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#1A1F2E', fontSize: 24, margin: '0 0 4px' }}>
+          Guía de Canecas
+        </h1>
+        <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#6B7080', margin: '0 0 14px' }}>
+          Sistema de 3 colores · Resolución 2184 de 2019
+        </p>
+
+        <CaliBar height={2.5} style={{ marginBottom: 14, opacity: 0.55 }} />
+
+        {/* 3-tab pill selector */}
+        <div style={{
+          display: 'flex', gap: 6,
+          background: 'rgba(0,0,0,0.06)', borderRadius: 99,
+          padding: 4,
+        }}>
+          {BIN_KEYS.map(k => (
+            <button key={k} onClick={() => setActive(k)}
+              className="btn-press"
+              style={{
+                flex: 1, padding: '8px 0',
+                borderRadius: 99, border: 'none',
+                fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: 13,
+                cursor: 'pointer', transition: 'all 0.2s',
+                background: active === k ? '#FFFFFF' : 'transparent',
+                color: active === k ? BIN_CONFIG[k].accent : '#6B7080',
+                boxShadow: active === k ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+              }}>
+              {BIN_CONFIG[k].emoji} {BIN_CONFIG[k].tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflow: 'hidden auto', padding: '16px 16px 120px' }} className="no-scrollbar">
+
+        {/* Landmark */}
+        <div style={{ marginBottom: 16 }}>
+          <LandmarkPlaceholder
+            name={active === 'blanco' ? 'Farallones de Cali' : active === 'verde' ? 'Río Cali · Valle' : 'Ciudad de Cali'}
+            code={active === 'blanco' ? 'CLO-003' : active === 'verde' ? 'CLO-004' : 'CLO-005'}
+            tone={cfg.tone}
+            height={120}
+          />
+        </div>
+
+        {/* Bin identity card */}
+        <div style={{
+          background: '#FFFFFF', borderRadius: 16,
+          border: '1px solid #E2DDD4', marginBottom: 14,
+          overflow: 'hidden', boxShadow: '0 1px 4px rgba(27,58,107,0.07)',
+        }}>
+          <div style={{ height: 4, background: cfg.accent }} />
+          <div style={{ padding: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+              <BinGlyph color={cfg.accent} size={36} stroke="rgba(255,255,255,0.45)" />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: cfg.accent, fontSize: 18, margin: 0 }}>
+                    {bin.name}
+                  </p>
+                  <span style={{
+                    fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 600,
+                    color: cfg.chipText, background: cfg.chipBg,
+                    padding: '3px 9px', borderRadius: 99,
+                  }}>
+                    {cfg.badge}
+                  </span>
+                </div>
+                <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080', margin: '2px 0 0' }}>
+                  {bin.subtitle}
+                </p>
+              </div>
+            </div>
+            <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#6B7080', lineHeight: 1.55, margin: 0 }}>
+              {bin.description}
+            </p>
+            {/* Category chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+              {cats.map(c => (
+                <span key={c.label} style={{
+                  fontFamily: 'Manrope, sans-serif', fontSize: 11, fontWeight: 600,
+                  padding: '4px 10px', borderRadius: 99,
+                  background: cfg.chipBg, color: cfg.chipText,
+                }}>
                   {c.emoji} {c.label}
                 </span>
               ))}
@@ -52,113 +146,115 @@ function BinCard({ bin }) {
           </div>
         </div>
 
-        <button
-          onClick={() => setOpen(!open)}
-          className={`btn-press mt-4 w-full py-2.5 rounded-2xl text-sm font-bold border-2 ${headerStyle.border} ${headerStyle.btn} ${
-            bin.id === 'blanco' ? 'bg-gray-100' : 'bg-white/10'
-          } transition-all`}
-        >
-          {open ? 'Ver menos ↑' : 'Ver detalles ↓'}
-        </button>
-      </div>
+        {/* SÍ / NO lists */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 14, border: '1px solid #E2DDD4', padding: '14px 14px 12px', boxShadow: '0 1px 3px rgba(27,58,107,0.05)' }}>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#2D7A4A', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+              ✅ Acepta
+            </p>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {bin.accepts.map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.accent, flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#1A1F2E', lineHeight: 1.35 }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ background: '#FFFFFF', borderRadius: 14, border: '1px solid #E2DDD4', padding: '14px 14px 12px', boxShadow: '0 1px 3px rgba(27,58,107,0.05)' }}>
+            <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#C8392E', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+              ✦ Consejos
+            </p>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {bin.tips.slice(0, 4).map(tip => (
+                <li key={tip} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6 }}>
+                  <span style={{ color: cfg.accent, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>•</span>
+                  <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 11.5, color: '#6B7080', lineHeight: 1.4 }}>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
-      {/* Expandable detail */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden bg-white"
-          >
-            <div className="px-5 py-4 space-y-4">
-              <p className="text-slate-600 text-sm leading-relaxed">{bin.description}</p>
-
-              {/* Acepta */}
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">✅ Acepta</p>
-                <ul className="space-y-1">
-                  {bin.accepts.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tips */}
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">💡 Consejos</p>
-                <ul className="space-y-1">
-                  {bin.tips.map((tip) => (
-                    <li key={tip} className="flex items-start gap-2 text-sm text-slate-600">
-                      <span className="text-primary-500 mt-0.5">•</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Schedule */}
-              <div className="bg-blue-50 rounded-xl p-3">
-                <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">🗓 Recolección en Cali</p>
-                <p className="text-blue-700 text-xs leading-relaxed">{bin.schedule}</p>
-              </div>
-
-              {/* Regulation */}
-              <p className="text-slate-400 text-xs text-center">{bin.regulation}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-export default function BinsPage() {
-  return (
-    <div className="h-full flex flex-col bg-primary-50">
-      <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-5 pt-12 pb-5 safe-top">
-        <h1 className="text-white font-extrabold text-2xl">Canecas</h1>
-        <p className="text-primary-100 text-sm mt-0.5">
-          Sistema de 3 colores · Resolución 2184 de 2019
-        </p>
-      </div>
-
-      <div className="flex-1 scrollable no-scrollbar px-4 pt-4 pb-28 space-y-4">
-        {/* Aviso importante */}
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl px-4 py-3 flex items-start gap-2">
-          <span className="text-xl">📢</span>
-          <p className="text-amber-800 text-xs leading-relaxed">
-            <strong>Obligatorio en Colombia:</strong> Desde enero 2021 todas las ciudades deben usar el código de
-            tres colores. En Cali lo refuerzan los Promotores <em>"Mi Cali Bella"</em> y la campaña{' '}
-            <strong>"Residuos que valen ORO"</strong>.
+        {/* Schedule */}
+        <div style={{
+          background: '#EEF1F8', borderRadius: 14,
+          border: '1px solid #C6D0E8', padding: '14px 16px',
+          marginBottom: 14,
+        }}>
+          <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, fontWeight: 700, color: '#1B3A6B', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+            🗓 Recolección en Cali
+          </p>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 13, color: '#1B3A6B', margin: 0, lineHeight: 1.5 }}>
+            {bin.schedule}
           </p>
         </div>
 
-        {Object.values(BINS).map((bin) => (
-          <BinCard key={bin.id} bin={bin} />
-        ))}
+        <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 11, color: '#8B8F9C', textAlign: 'center', marginBottom: 20, lineHeight: 1.4 }}>
+          {bin.regulation}
+        </p>
+
+        {/* Obligatorio */}
+        <div style={{
+          background: '#E8F5ED', borderRadius: 14, border: '1px solid #B3D9BF',
+          padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10,
+          marginBottom: 20,
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>📢</span>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12.5, color: '#1A5C2F', margin: 0, lineHeight: 1.55 }}>
+            <strong>Obligatorio en Colombia desde 2021.</strong>{' '}
+            En Cali la campaña <strong>"Residuos que valen ORO"</strong> refuerza el uso correcto de las tres canecas puerta a puerta.
+          </p>
+        </div>
 
         {/* Residuos especiales */}
-        <div className="bg-red-50 border-2 border-red-200 rounded-2xl px-4 py-4">
-          <h3 className="font-bold text-red-800 text-sm mb-2">🚨 Residuos Especiales (NO van en canecas)</h3>
-          <div className="space-y-1.5">
-            {[
-              ['🔋', 'Pilas/baterías', 'Éxito, Jumbo, Homecenter'],
-              ['💊', 'Medicamentos', 'Farmacias autorizadas'],
-              ['🛢️', 'Aceite de cocina', 'Puntos Verdes Lito'],
-              ['📱', 'Electrónicos', 'Almacenes de cadena (RAEE)'],
-              ['💡', 'Bombillos ahorradores', 'Ferreterías participantes'],
-            ].map(([emoji, name, where]) => (
-              <div key={name} className="flex items-center gap-2">
-                <span className="text-base">{emoji}</span>
-                <span className="text-red-700 text-xs font-semibold">{name}:</span>
-                <span className="text-red-600 text-xs">{where}</span>
-              </div>
-            ))}
+        <div style={{ marginBottom: 14 }}>
+          <SectionTitle>Residuos Especiales</SectionTitle>
+          <div style={{
+            background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2DDD4',
+            overflow: 'hidden', boxShadow: '0 1px 4px rgba(27,58,107,0.07)',
+          }}>
+            <div style={{ height: 4, background: '#C8392E' }} />
+            <div style={{ padding: '14px 16px' }}>
+              <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, color: '#1A1F2E', fontSize: 13, margin: '0 0 10px' }}>
+                🚨 NO van en ninguna caneca — requieren punto especial
+              </p>
+              {[
+                ['🔋','Pilas / baterías','Éxito, Jumbo, Homecenter'],
+                ['💊','Medicamentos','Farmacias autorizadas'],
+                ['🛢️','Aceite de cocina','Puntos Verdes Lito'],
+                ['📱','Electrónicos (RAEE)','Almacenes de cadena'],
+                ['💡','Bombillos ahorradores','Ferreterías participantes'],
+              ].map(([e, n, w]) => (
+                <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 17, width: 24, flexShrink: 0 }}>{e}</span>
+                  <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: 12, color: '#1A1F2E' }}>{n}:</span>
+                  <span style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: '#6B7080' }}>{w}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Dónde encontrarla */}
+        <SectionTitle>Puntos de Recolección</SectionTitle>
+        <div style={{
+          background: '#1B3A6B', borderRadius: 16, padding: '20px 18px', textAlign: 'center',
+        }}>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, color: '#fff', fontSize: 15, margin: '0 0 6px' }}>
+            ¿Dudas con un residuo?
+          </p>
+          <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '0 0 16px', lineHeight: 1.5 }}>
+            Usa nuestro escáner IA para identificarlo al instante.
+          </p>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            background: '#2D7A4A', borderRadius: 99,
+            padding: '9px 18px',
+          }}>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fontWeight: 600, color: '#fff' }}>
+              📞 Línea 015 · EMCALI
+            </span>
           </div>
         </div>
       </div>

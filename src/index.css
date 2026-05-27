@@ -3,57 +3,76 @@
 @tailwind utilities;
 
 @layer base {
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body, #root { height: 100%; width: 100%; overflow: hidden; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overscroll-behavior: none; }
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overscroll-behavior: none;
+    background: #F4F0E8;
+    color: #1A1F2E;
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 @layer utilities {
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .safe-top    { padding-top:    env(safe-area-inset-top, 0px); }
-
-  .scrollable { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px); }
+  .safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+  .scrollable  { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .glass {
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  /* Press effect */
+  .btn-press { transition: transform 0.12s, opacity 0.12s; }
+  .btn-press:active { transform: scale(0.96); opacity: 0.88; }
+
+  /* Standard surface card */
+  .card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #E2DDD4;
+    box-shadow: 0 1px 4px rgba(27,58,107,0.08);
   }
 
-  .card-shadow {
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+  /* Section eyebrow label */
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: #6B7080;
   }
 
-  .btn-press { transition: transform 0.1s; }
-  .btn-press:active { transform: scale(0.95); }
+  /* Glass panel */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* Font helpers */
+  .font-display { font-family: 'Manrope', sans-serif; }
+  .font-mono    { font-family: 'IBM Plex Mono', monospace; }
 }
 
-/* Animaciones globales */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Animations ── */
+@keyframes caliScan {
+  0%   { top: 8px; }
+  100% { top: calc(100% - 10px); }
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes caliSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
-@keyframes scanLine {
-  0%   { top: 15%; }
-  50%  { top: 75%; }
-  100% { top: 15%; }
-}
-@keyframes ringPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
-  50%       { box-shadow: 0 0 0 16px rgba(34,197,94,0); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes pulseRing {
+  0%,100% { box-shadow: 0 0 0 0   rgba(45,122,74,0.4); }
+  50%     { box-shadow: 0 0 0 14px rgba(45,122,74,0); }
 }
 
-.animate-slide-up  { animation: slideUp 0.4s ease forwards; }
-.animate-fade-in   { animation: fadeIn 0.3s ease forwards; }
-.animate-scan-line { animation: scanLine 2.5s ease-in-out infinite; }
-.animate-ring      { animation: ringPulse 2s ease infinite; }
-
-/* Page transitions */
-.page-enter { opacity: 0; transform: translateY(8px); }
-.page-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease; }
+.animate-cali-scan  { animation: caliScan 2.2s ease-in-out infinite alternate; }
+.animate-slide-up   { animation: caliSlideUp 0.38s cubic-bezier(.34,1.46,.64,1) both; }
+.animate-fade-in    { animation: fadeIn 0.25s ease both; }
+.animate-ring       { animation: pulseRing 2s ease infinite; }
+.animate-spin       { animation: spin 1s linear infinite; }

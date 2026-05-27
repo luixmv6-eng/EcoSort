@@ -1,108 +1,153 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CaliBar } from '../UI/DesignAtoms';
 
 const STEPS = [
   {
-    emoji: '👋',
+    emoji: '🌿',
     title: '¡Bienvenido a EcoSort!',
-    desc: 'Tu guía inteligente para separar correctamente los residuos en Cali. Con IA y tu cámara, nunca más tendrás dudas sobre dónde va cada cosa.',
-    img: null,
+    desc: 'La app caleña con inteligencia artificial para separar residuos. Nuestra ciudad nos lo da todo — ¡le devolvemos el cuidado!',
+    accent: '#1B3A6B',
   },
   {
     emoji: '📷',
-    title: 'Escáner de Residuos',
-    desc: 'Apunta tu cámara a cualquier objeto y EcoSort identifica automáticamente si es plástico, vidrio, papel, metal, cartón o basura no reciclable.',
+    title: 'Escáner con IA',
+    desc: 'Apunta la cámara a cualquier residuo y EcoSort lo clasifica al instante: plástico, vidrio, papel, metal, cartón o basura no reciclable.',
     hint: 'Toca "Escanear" en el menú inferior',
+    accent: '#1B3A6B',
   },
   {
     emoji: '♻️',
     title: 'Guía de Residuos',
-    desc: 'Consulta cada categoría de residuo: qué ejemplos incluye, qué NO va, consejos para prepararlo y su impacto ambiental.',
+    desc: 'Consulta cada categoría con ejemplos, qué va y qué NO va, consejos prácticos y el impacto ambiental. Toda la info de Cali.',
     hint: 'Toca "Guía" en el menú inferior',
+    accent: '#2D7A4A',
   },
   {
     emoji: '🗑️',
-    title: 'Colores de las Canecas',
-    desc: 'Cali usa 3 colores según la Resolución 2184 de 2019:\n• ⬜ Blanca – Reciclables\n• 🟢 Verde – Orgánicos\n• ⬛ Negra – No aprovechables',
+    title: 'Las 3 Canecas de Cali',
+    desc: 'Desde 2021 la ley colombiana exige 3 colores:\n⬜ Blanca — Reciclables\n🟢 Verde — Orgánicos\n⬛ Negra — No aprovechables',
     hint: 'Toca "Canecas" en el menú inferior',
+    accent: '#1B3A6B',
   },
   {
-    emoji: '📍',
-    title: 'Puntos Especiales',
-    desc: 'Pilas, medicamentos, aceite y electrónicos NO van en ninguna caneca normal. Te mostramos los puntos de recolección especial en Cali.',
-    hint: 'En la sección "Info" encontrarás los puntos',
+    emoji: '🏔️',
+    title: 'Cuida los Farallones',
+    desc: 'El Parque Natural Farallones de Cali es uno de los ecosistemas más ricos del mundo. Reciclar bien protege nuestras montañas.',
+    accent: '#2D7A4A',
   },
   {
-    emoji: '🌱',
-    title: '¡Todo listo!',
-    desc: 'Cali genera ~1,500 ton de basura al día y solo recicla el 8%. Con EcoSort puedes ser parte del cambio. ¡Empieza a escanear!',
-    hint: null,
+    emoji: '✦',
+    title: '¡Bacano! Ya estás listo',
+    desc: 'Cali genera ~1,500 toneladas de basura por día y recicla apenas el 8%. Con EcoSort somos parte del cambio. ¡Pa\'lante, caleño!',
+    accent: '#1B3A6B',
   },
 ];
 
 export default function TourGuide({ onFinish }) {
   const [step, setStep] = useState(0);
-  const current = STEPS[step];
+  const cur = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  const next = () => {
-    if (isLast) { onFinish(); return; }
-    setStep((s) => s + 1);
-  };
-
-  const skip = () => onFinish();
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={skip}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: 'rgba(26,31,46,0.55)' }}
+      onClick={onFinish}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={{ y: 60, opacity: 0 }}
+          initial={{ y: 72, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -40, opacity: 0 }}
-          transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-          className="w-full max-w-md bg-white rounded-t-3xl p-6 pb-10 mx-0"
+          exit={{ y: -32, opacity: 0 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+          style={{
+            width: '100%', maxWidth: 440,
+            background: '#FFFFFF',
+            borderRadius: '28px 28px 0 0',
+            padding: '20px 24px 40px',
+            overflow: 'hidden',
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.12)',
+          }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Progress dots */}
-          <div className="flex justify-center gap-1.5 mb-5">
+          {/* Top bar */}
+          <CaliBar height={3} style={{ marginBottom: 20, opacity: 0.7 }} />
+
+          {/* Dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 20 }}>
             {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === step ? 'w-6 bg-primary-500' : 'w-1.5 bg-gray-200'
-                }`}
-              />
+              <div key={i} style={{
+                height: 5, borderRadius: 99,
+                width: i === step ? 24 : 6,
+                background: i === step ? cur.accent : '#D4CEBC',
+                transition: 'all 0.3s',
+              }} />
             ))}
           </div>
 
           {/* Content */}
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{current.emoji}</div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-3">{current.title}</h2>
-            <p className="text-slate-600 leading-relaxed whitespace-pre-line">{current.desc}</p>
-            {current.hint && (
-              <div className="mt-3 bg-primary-50 rounded-xl px-4 py-2 inline-block">
-                <p className="text-primary-700 text-sm font-medium">💡 {current.hint}</p>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>{cur.emoji}</div>
+            <h2 style={{
+              fontFamily: 'Manrope, sans-serif',
+              fontSize: 22, fontWeight: 800,
+              color: '#1A1F2E', margin: '0 0 8px',
+            }}>
+              {cur.title}
+            </h2>
+            <p style={{
+              fontFamily: 'Manrope, sans-serif',
+              color: '#6B7080', lineHeight: 1.55,
+              whiteSpace: 'pre-line', fontSize: 14, margin: 0,
+            }}>
+              {cur.desc}
+            </p>
+            {cur.hint && (
+              <div style={{
+                display: 'inline-block',
+                marginTop: 12, padding: '6px 14px',
+                borderRadius: 99, fontSize: 12, fontWeight: 600,
+                background: cur.accent + '12',
+                color: cur.accent,
+                border: `1px solid ${cur.accent}30`,
+              }}>
+                💡 {cur.hint}
               </div>
             )}
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div style={{ display: 'flex', gap: 10 }}>
             {!isLast && (
-              <button
-                onClick={skip}
-                className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-500 font-semibold text-sm btn-press"
-              >
-                Saltar tour
+              <button onClick={onFinish}
+                className="btn-press"
+                style={{
+                  flex: 1, padding: '12px 0',
+                  borderRadius: 99,
+                  border: '1px solid #D4CEBC',
+                  background: 'transparent',
+                  color: '#6B7080', fontWeight: 600, fontSize: 14,
+                  cursor: 'pointer', fontFamily: 'Manrope, sans-serif',
+                }}>
+                Saltar
               </button>
             )}
             <button
-              onClick={next}
-              className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold text-base shadow-lg btn-press"
-            >
-              {isLast ? '¡Empezar! 🚀' : 'Siguiente →'}
+              onClick={() => isLast ? onFinish() : setStep(s => s + 1)}
+              className="btn-press"
+              style={{
+                flex: 2, padding: '12px 0',
+                borderRadius: 99,
+                background: cur.accent,
+                color: '#fff',
+                fontWeight: 700, fontSize: 15,
+                cursor: 'pointer', fontFamily: 'Manrope, sans-serif',
+                border: 'none',
+                boxShadow: `0 4px 14px ${cur.accent}40`,
+              }}>
+              {isLast ? '¡A reciclar, Cali! 🌿' : 'Siguiente →'}
             </button>
           </div>
         </motion.div>

@@ -65,7 +65,7 @@ export default function App() {
       {showTour && !showSplash && <TourGuide onFinish={handleTourFinish} />}
 
       {/* App shell */}
-      <div className="h-full flex flex-col bg-primary-50">
+      <div className="h-full flex flex-col" style={{ background: '#F4F0E8' }}>
         <div className="flex-1 relative overflow-hidden">
           <AppRoutes />
         </div>
